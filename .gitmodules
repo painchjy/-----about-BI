@@ -1,0 +1,3 @@
+[submodule "third_party/WeKnora"]
+	path = third_party/WeKnora
+	url = https://github.com/Tencent/WeKnora

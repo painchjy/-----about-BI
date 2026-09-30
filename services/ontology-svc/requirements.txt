@@ -1,0 +1,4 @@
+pyyaml
+fastapi
+uvicorn[standard]
+httpx  # 冒烟测试/客户端用

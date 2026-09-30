@@ -30,8 +30,12 @@
 ├── agents/
 │   └── extractor.prompt.md   # 抽取智能体提示词契约 v1（两遍法/无证据不出元素）
 ├── tools/
-│   └── validator/validate.py # 本体校验器：结构校验 + 规则引擎（R1–R10）
-└── .venv/                    # Python 环境（pyyaml）
+│   └── validator/validate.py # 本体校验器：结构校验 + 规则引擎（R1–R10 + 状态门禁）
+├── services/ontology-svc/    # 本体服务（FastAPI）：元模型分发/校验API/暂存库(SQLite)
+├── deploy/docker-compose.ontology.yml  # 叠加编排：ontology-svc 加入 WeKnora-network
+├── scripts/start-stack.sh    # 一键全栈启动（WeKnora + ontology-svc，需 Docker）
+├── third_party/WeKnora/      # WeKnora v0.8.2（git submodule，浅 fork 只 vendor 不改内核）
+└── .venv/                    # Python 环境（pyyaml/fastapi/uvicorn）
 ```
 
 ## 快速开始：校验示例模型
@@ -46,7 +50,7 @@
 | 里程碑 | 内容 |
 |---|---|
 | M1 | 本体元模型 + 校验器 + 示例（**本次已交付**） |
-| M2 | fork/vendor WeKnora，docker compose 跑通；本体服务（注册/校验/版本） |
+| M2 | ✅ **已完成**：WeKnora v0.8.2 已 vendor（submodule）；ontology-svc 骨架可运行（6 端点冒烟全过）；compose 叠加编排就绪（本沙箱无 Docker，全栈运行需在 Docker 环境执行 `scripts/start-stack.sh`） |
 | M3 | ~~抽取 PoC~~ **本体覆盖度 PoC 已提前完成**（模拟语料验证，见 `docs/poc-report.md`）；待工程化为真实 Extractor 服务 |
 | M4 | 模型库存储 + 人工审校台（HITL）+ 规则校验流水线 |
 | M5 | 模型 MCP Server：向 IDE/代码生成智能体暴露领域模型 |

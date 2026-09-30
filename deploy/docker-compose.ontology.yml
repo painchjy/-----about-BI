@@ -1,0 +1,38 @@
+# =============================================================================
+# OntoDomain 叠加编排：在 WeKnora 之上追加本体服务
+# 用法（在 third_party/WeKnora 目录外、repo 根目录下）：
+#   docker compose \
+#     -f third_party/WeKnora/docker-compose.yml \
+#     -f deploy/docker-compose.ontology.yml \
+#     --env-file third_party/WeKnora/.env up -d ontology-svc
+# 说明：浅 fork 策略——本文件只做"叠加"，不修改 WeKnora 原生编排。
+# =============================================================================
+services:
+  ontology-svc:
+    image: ontodomain/ontology-svc:0.2.0
+    build:
+      context: ..                      # repo 根（包含 ontology/ 与 tools/validator/）
+      dockerfile: services/ontology-svc/Dockerfile
+    container_name: ontology-svc
+    ports:
+      - "8090:8090"
+    environment:
+      - PORT=8090
+      - UDOM_DB=/data/models.db
+    volumes:
+      - ontology-data:/data            # 模型暂存库（SQLite）持久化
+    networks:
+      - WeKnora-network                # 加入 WeKnora 网络，供其 Agent/MCP 调用
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:8090/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+networks:
+  WeKnora-network:
+    external: true                     # 复用 WeKnora compose 创建的网络
+
+volumes:
+  ontology-data:
