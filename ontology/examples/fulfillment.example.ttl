@@ -1,0 +1,327 @@
+@prefix udom: <https://ontodomain.dev/udom#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix ful: <https://ontodomain.dev/example/fulfillment#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+
+<https://ontodomain.dev/example/fulfillment> a owl:Ontology ; owl:imports <https://ontodomain.dev/udom> ;
+    rdfs:label "履约异常域模型（实例）"@zh ; owl:versionInfo "udom=0.1.0" .
+
+ful:ev-01 a udom:Evidence ;
+    rdfs:label "白皮书-异常定义"@zh ;
+    udom:docTitle "履约业务白皮书" ;
+    udom:docType udom:enum_docType_business ;
+    udom:location "§3.2" ;
+    udom:fragment "履约异常指订单在履约过程中出现的缺货、超时、破损、地址异常等偏离正常流程的事件" .
+
+ful:ev-02 a udom:Evidence ;
+    rdfs:label "OMS-接口文档"@zh ;
+    udom:docTitle "OMS系统接口文档v2.3" ;
+    udom:docType udom:enum_docType_technical ;
+    udom:location "§5.1" ;
+    udom:fragment "GET /orders/{id} 返回订单详情；POST /compensations 创建赔付单（幂等键 idempotency_key）" .
+
+ful:ev-03 a udom:Evidence ;
+    rdfs:label "赔付运营规范"@zh ;
+    udom:docTitle "客服赔付运营规范" ;
+    udom:docType udom:enum_docType_regulatory ;
+    udom:location "§2.1" ;
+    udom:fragment "单笔赔付金额超过500元的，必须经人工审批后方可执行" .
+
+ful:vision-01 a udom:Vision ;
+    rdfs:label "企业愿景"@zh ;
+    udom:hasStatus udom:enum_status_approved ;
+    udom:hasOrigin udom:enum_origin_human ;
+    udom:evidencedBy ful:ev-01 ;
+    udom:statement "成为客户最信赖的即时零售平台" .
+
+ful:mission-01 a udom:Mission ;
+    rdfs:label "履约使命"@zh ;
+    udom:hasStatus udom:enum_status_approved ;
+    udom:hasOrigin udom:enum_origin_human ;
+    udom:evidencedBy ful:ev-01 ;
+    udom:statement "提供全渠道订单的高效履约" .
+
+ful:goal-01 a udom:Goal ;
+    rdfs:label "履约体验目标"@zh ;
+    udom:hasOrigin udom:enum_origin_agent ;
+    udom:agentName "extractor-v1" ;
+    udom:confidence "0.86"^^xsd:decimal ;
+    udom:evidencedBy ful:ev-01 ;
+    udom:statement "持续提升履约体验与履约效率" .
+
+ful:obj-01 a udom:Objective ;
+    rdfs:label "履约准时率指标"@zh ;
+    udom:hasStatus udom:enum_status_proposed ;
+    udom:hasOrigin udom:enum_origin_agent ;
+    udom:agentName "extractor-v1" ;
+    udom:confidence "0.91"^^xsd:decimal ;
+    udom:evidencedBy ful:ev-01 ;
+    udom:statement "履约准时率达到99.5%" ;
+    udom:metricName "履约准时率" ;
+    udom:metricUnit "%" ;
+    udom:metricTarget "99.5"^^xsd:decimal ;
+    udom:metricBaseline "97.8"^^xsd:decimal ;
+    udom:metricDeadline "2026-Q4" .
+
+ful:strat-01 a udom:Strategy ;
+    rdfs:label "异常自动化战略"@zh ;
+    udom:hasOrigin udom:enum_origin_agent ;
+    udom:agentName "extractor-v1" ;
+    udom:confidence "0.8"^^xsd:decimal ;
+    udom:evidencedBy ful:ev-01 ;
+    udom:statement "履约异常全链路自动化处理，减少人工介入" .
+
+ful:tactic-01 a udom:Tactic ;
+    rdfs:label "智能体初判战术"@zh ;
+    udom:hasOrigin udom:enum_origin_agent ;
+    udom:agentName "extractor-v1" ;
+    udom:confidence "0.75"^^xsd:decimal ;
+    udom:evidencedBy ful:ev-01 ;
+    udom:statement "引入异常处理智能体替代人工初判与定责建议" .
+
+ful:pol-01 a udom:BusinessPolicy ;
+    rdfs:label "资金处置审批政策"@zh ;
+    udom:hasStatus udom:enum_status_approved ;
+    udom:hasOrigin udom:enum_origin_human ;
+    udom:evidencedBy ful:ev-03 ;
+    udom:statement "涉及资金赔付的处置必须保留人工审批通道" .
+
+ful:rule-01 a udom:BusinessRule ;
+    rdfs:label "赔付审批金额规则"@zh ;
+    udom:hasStatus udom:enum_status_approved ;
+    udom:hasOrigin udom:enum_origin_human ;
+    udom:evidencedBy ful:ev-03 ;
+    udom:statement "单笔赔付金额超过500元必须人工审批后方可执行" ;
+    udom:enforcement udom:enum_enforcement_hybrid .
+
+ful:dom-01 a udom:Domain ;
+    rdfs:label "履约域"@zh ;
+    udom:hasOrigin udom:enum_origin_agent ;
+    udom:agentName "extractor-v1" ;
+    udom:confidence "0.88"^^xsd:decimal ;
+    udom:evidencedBy ful:ev-01 ;
+    udom:subKind udom:enum_subKind_core .
+
+ful:cap-01 a udom:BusinessCapability ;
+    rdfs:label "履约异常处理能力"@zh ;
+    udom:hasOrigin udom:enum_origin_agent ;
+    udom:agentName "extractor-v1" ;
+    udom:confidence "0.82"^^xsd:decimal ;
+    udom:evidencedBy ful:ev-01 ;
+    udom:level "2"^^xsd:integer .
+
+ful:bc-01 a udom:BoundedContext ;
+    rdfs:label "履约异常上下文"@zh ;
+    rdfs:comment "异常工单、定责、赔付的一致性边界"@zh ;
+    udom:hasOrigin udom:enum_origin_agent ;
+    udom:agentName "extractor-v1" ;
+    udom:confidence "0.85"^^xsd:decimal ;
+    udom:evidencedBy ful:ev-01 .
+
+ful:bc-02 a udom:BoundedContext ;
+    rdfs:label "订单上下文"@zh ;
+    rdfs:comment "订单详情与履约状态"@zh ;
+    udom:hasOrigin udom:enum_origin_agent ;
+    udom:agentName "extractor-v1" ;
+    udom:confidence "0.83"^^xsd:decimal ;
+    udom:evidencedBy ful:ev-02 .
+
+ful:term-01 a udom:GlossaryTerm ;
+    rdfs:label "履约异常"@zh ;
+    udom:hasOrigin udom:enum_origin_agent ;
+    udom:agentName "extractor-v1" ;
+    udom:confidence "0.95"^^xsd:decimal ;
+    udom:evidencedBy ful:ev-01 ;
+    udom:term "履约异常" ;
+    udom:definition "订单在履约过程中出现的缺货、超时、破损、地址异常等偏离正常流程的事件" .
+
+ful:agg-01 a udom:Aggregate ;
+    rdfs:label "履约异常工单"@zh ;
+    udom:hasOrigin udom:enum_origin_agent ;
+    udom:agentName "extractor-v1" ;
+    udom:confidence "0.78"^^xsd:decimal ;
+    udom:evidencedBy ful:ev-01 ;
+    udom:invariants "赔付金额不得超过订单实付金额" ;
+    udom:invariants "同一异常只能有一个进行中工单" .
+
+ful:evt-01 a udom:DomainEvent ;
+    rdfs:label "异常已升级"@zh ;
+    udom:hasOrigin udom:enum_origin_agent ;
+    udom:agentName "extractor-v1" ;
+    udom:confidence "0.7"^^xsd:decimal ;
+    udom:evidencedBy ful:ev-01 ;
+    udom:payload "case_id" ;
+    udom:payload "reason" ;
+    udom:payload "escalate_to" .
+
+ful:svc-01 a udom:ApplicationService ;
+    rdfs:label "异常工单应用服务"@zh ;
+    udom:hasOrigin udom:enum_origin_agent ;
+    udom:agentName "extractor-v1" ;
+    udom:confidence "0.8"^^xsd:decimal ;
+    udom:evidencedBy ful:ev-02 ;
+    udom:operations "createCase" ;
+    udom:operations "approveCompensation" ;
+    udom:operations "rejectCompensation" .
+
+ful:org-01 a udom:OrganizationUnit ;
+    rdfs:label "履约运营部"@zh ;
+    udom:hasOrigin udom:enum_origin_human ;
+    udom:evidencedBy ful:ev-01 .
+
+ful:sys-01 a udom:System ;
+    rdfs:label "OMS订单管理系统"@zh ;
+    udom:hasOrigin udom:enum_origin_import ;
+    udom:agentName "code-scanner" ;
+    udom:confidence "0.99"^^xsd:decimal ;
+    udom:evidencedBy ful:ev-02 ;
+    udom:subKind udom:enum_subKind_legacy ;
+    udom:criticality udom:enum_criticality_high .
+
+ful:agent-01 a udom:Agent ;
+    rdfs:label "履约异常处理专员"@zh ;
+    udom:hasStatus udom:enum_status_proposed ;
+    udom:hasOrigin udom:enum_origin_human ;
+    udom:evidencedBy ful:ev-01 ;
+    udom:autonomy udom:enum_autonomy_L2 ;
+    udom:charterScope_in "异常定责" ;
+    udom:charterScope_in "赔付建议" ;
+    udom:charterScope_in "工单流转" ;
+    udom:charterScope_out "退款审批" ;
+    udom:charterScope_out "客户谈判" .
+
+ful:skill-01 a udom:Skill ;
+    rdfs:label "异常定责与赔付建议"@zh ;
+    udom:hasOrigin udom:enum_origin_human ;
+    udom:evidencedBy ful:ev-01 ;
+    udom:evidencedBy ful:ev-03 ;
+    udom:instructions "1)查询订单与履约轨迹 2)按定责矩阵判定责任方 3)按赔付标准生成建议 4)超500元转人工" .
+
+ful:tool-01 a udom:Tool ;
+    rdfs:label "queryOrderDetail"@zh ;
+    udom:hasOrigin udom:enum_origin_agent ;
+    udom:agentName "code-scanner" ;
+    udom:confidence "0.97"^^xsd:decimal ;
+    udom:evidencedBy ful:ev-02 ;
+    udom:semantics "查询订单详情与履约状态" ;
+    udom:sideEffects udom:enum_sideEffects_read ;
+    udom:idempotent "true"^^xsd:boolean .
+
+ful:tool-02 a udom:Tool ;
+    rdfs:label "createCompensation"@zh ;
+    udom:hasOrigin udom:enum_origin_agent ;
+    udom:agentName "code-scanner" ;
+    udom:confidence "0.95"^^xsd:decimal ;
+    udom:evidencedBy ful:ev-02 ;
+    udom:semantics "创建赔付单（需幂等键）" ;
+    udom:sideEffects udom:enum_sideEffects_write ;
+    udom:idempotent "true"^^xsd:boolean ;
+    udom:permissions "compensation:write" .
+
+ful:mcp-01 a udom:MCPServer ;
+    rdfs:label "OMS-MCP"@zh ;
+    rdfs:comment "把遗留OMS包装为干净工具接口，屏蔽其内部模型"@zh ;
+    udom:hasOrigin udom:enum_origin_human ;
+    udom:evidencedBy ful:ev-02 ;
+    udom:pattern udom:enum_pattern_acl .
+
+ful:grd-01 a udom:Guardrail ;
+    rdfs:label "赔付金额校验器"@zh ;
+    udom:hasOrigin udom:enum_origin_human ;
+    udom:evidencedBy ful:ev-03 ;
+    udom:subKind udom:enum_subKind_validator ;
+    udom:action udom:enum_action_block .
+
+ful:grd-02 a udom:Guardrail ;
+    rdfs:label "人工审批台"@zh ;
+    udom:hasOrigin udom:enum_origin_human ;
+    udom:evidencedBy ful:ev-03 ;
+    udom:subKind udom:enum_subKind_hitl ;
+    udom:action udom:enum_action_escalate .
+
+ful:eval-01 a udom:Eval ;
+    rdfs:label "赔付建议回归集"@zh ;
+    udom:hasOrigin udom:enum_origin_human ;
+    udom:evidencedBy ful:ev-03 ;
+    udom:subKind udom:enum_subKind_regression ;
+    udom:passCriteria "定责准确率≥90%且超权限赔付拦截率100%" .
+
+ful:mission-01 udom:makesOperative ful:vision-01 .
+
+ful:obj-01 udom:measures ful:goal-01 .
+
+ful:strat-01 udom:channelsEffortsToward ful:goal-01 .
+
+ful:tactic-01 udom:implements ful:strat-01 .
+
+ful:pol-01 udom:governs ful:strat-01 .
+
+ful:pol-01 udom:governs ful:agent-01 .
+
+ful:rule-01 udom:derivesFrom ful:pol-01 .
+
+ful:cap-01 udom:enables ful:strat-01 .
+
+ful:bc-01 udom:realizes ful:cap-01 .
+
+ful:skill-01 udom:realizes ful:cap-01 .
+
+ful:bc-01 udom:within ful:dom-01 .
+
+ful:bc-02 udom:within ful:dom-01 .
+
+ful:bc-01 udom:contains ful:term-01 .
+
+ful:bc-01 udom:contains ful:agg-01 .
+
+ful:bc-01 udom:contains ful:evt-01 .
+
+ful:bc-01 udom:contains ful:svc-01 .
+
+ful:agg-01 udom:raises ful:evt-01 .
+
+ful:bc-02 udom:ctx_customer_supplier ful:bc-01 .
+
+ful:agent-01 udom:hasMission ful:mission-01 .
+
+ful:agent-01 udom:hasObjective ful:obj-01 .
+
+ful:agent-01 udom:belongsTo ful:bc-01 .
+
+ful:agent-01 udom:escalatesVia ful:pol-01 .
+
+ful:agent-01 udom:ownsSkill ful:skill-01 .
+
+ful:skill-01 udom:invokes ful:tool-01 .
+
+ful:skill-01 udom:invokes ful:tool-02 .
+
+ful:tool-01 udom:backedBy ful:sys-01 .
+
+ful:tool-02 udom:backedBy ful:svc-01 .
+
+ful:mcp-01 udom:wraps ful:sys-01 .
+
+ful:mcp-01 udom:exposes ful:tool-01 .
+
+ful:grd-01 udom:enforces ful:rule-01 .
+
+ful:grd-02 udom:enforces ful:rule-01 .
+
+ful:rule-01 udom:enforcedBy ful:grd-01 .
+
+ful:grd-01 udom:protects ful:agent-01 .
+
+ful:grd-02 udom:protects ful:agent-01 .
+
+ful:eval-01 udom:validates ful:agent-01 .
+
+ful:eval-01 udom:specifies ful:rule-01 .
+
+ful:sys-01 udom:ownedBy ful:org-01 .
+
+ful:bc-01 udom:ownedBy ful:org-01 .

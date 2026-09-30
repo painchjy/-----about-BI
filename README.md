@@ -22,15 +22,18 @@
 │   └── architecture.md       # ② 方案架构：组件、数据流、关键决策、验证指标
 ├── ontology/
 │   ├── metamodel.yaml        # 机器可读元模型 v0.1.1：类型/关系/约束规则（智能体的建模契约）
+│   ├── udom.ttl              # OWL/Turtle 本体（自动生成，可导入 Protégé 评审）
 │   └── examples/
-│       └── fulfillment.example.yaml  # 示例实例：履约异常域（可通过校验器全量校验）
+│       ├── fulfillment.example.yaml  # 示例实例：履约异常域（校验全绿）
+│       └── fulfillment.example.ttl   # 示例实例的 RDF 形式
 ├── poc/
 │   ├── corpus/               # PoC 模拟语料：业务白皮书 + 系统接口说明
 │   └── after-sales.candidate.yaml    # 抽取候选模型（72元素/71关系，校验全绿）
 ├── agents/
 │   └── extractor.prompt.md   # 抽取智能体提示词契约 v1（两遍法/无证据不出元素）
 ├── tools/
-│   └── validator/validate.py # 本体校验器：结构校验 + 规则引擎（R1–R10 + 状态门禁）
+│   ├── validator/validate.py # 本体校验器：结构校验 + 规则引擎（R1–R10 + 状态门禁）
+│   └── owl/export_turtle.py  # OWL/Turtle 导出器（元模型演进后重新生成即可）
 ├── services/ontology-svc/    # 本体服务（FastAPI）：元模型分发/校验API/暂存库(SQLite)
 ├── deploy/docker-compose.ontology.yml  # 叠加编排：ontology-svc 加入 WeKnora-network
 ├── scripts/start-stack.sh    # 一键全栈启动（WeKnora + ontology-svc，需 Docker）

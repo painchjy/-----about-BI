@@ -1,0 +1,717 @@
+@prefix udom: <https://ontodomain.dev/udom#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+
+
+<https://ontodomain.dev/udom> a owl:Ontology ;
+    owl:versionInfo "0.1.1" ;
+    rdfs:label "UDOM 统一领域本体"@zh ;
+    rdfs:label "Unified Domain Ontology Metamodel"@en ;
+    rdfs:comment "整合 BMM(业务动机)×DDD(领域驱动设计)×AgentOps(智能体工程) 的领域建模本体；由 metamodel.yaml 自动生成，请勿手工编辑"@zh ;
+    dcterms:source "ontology/metamodel.yaml" ;
+    dcterms:created "2026-09-30"^^xsd:date .
+
+# ===== 基座与五层 =====
+udom:Element a owl:Class ; rdfs:label "元素（抽象基座）"@zh ;
+    rdfs:comment "所有模型元素的基座：id/name/status/ns/provenance/evidence"@zh .
+
+udom:hasStatus a owl:ObjectProperty ; rdfs:label "治理状态"@zh ; rdfs:domain udom:Element ; rdfs:range udom:Status .
+udom:hasOrigin a owl:ObjectProperty ; rdfs:label "来源"@zh ; rdfs:domain udom:Element ; rdfs:range udom:Origin .
+udom:evidencedBy a owl:ObjectProperty ; rdfs:label "证据溯源"@zh ; rdfs:domain udom:Element ; rdfs:range udom:Evidence ;
+    rdfs:comment "每个元素应有 >=1 条证据（R6, warn）"@zh .
+udom:ns a owl:DatatypeProperty ; rdfs:label "命名空间/域分区"@zh .
+udom:agentName a owl:DatatypeProperty ; rdfs:label "产出智能体"@zh .
+udom:confidence a owl:DatatypeProperty ; rdfs:label "置信度"@zh .
+udom:alias a owl:DatatypeProperty ; rdfs:label "别名"@zh .
+udom:clues a owl:DatatypeProperty ; rdfs:label "抽取线索"@zh .
+
+udom:KernelElement a owl:Class ; rdfs:subClassOf udom:Element ;
+    rdfs:label "内核层"@zh ; rdfs:comment "元素基座 / 证据溯源 / 治理元数据"@zh .
+
+udom:MotivationElement a owl:Class ; rdfs:subClassOf udom:Element ;
+    rdfs:label "动机层"@zh ; rdfs:comment "BMM——愿景/使命/目标/指标/策略/政策/规则/风险"@zh .
+
+udom:DomainElement a owl:Class ; rdfs:subClassOf udom:Element ;
+    rdfs:label "领域层"@zh ; rdfs:comment "DDD——子域/限界上下文/通用语言/聚合/上下文映射"@zh .
+
+udom:AgentElement a owl:Class ; rdfs:subClassOf udom:Element ;
+    rdfs:label "智能体层"@zh ; rdfs:comment "AgentOps——智能体/技能/工具/护栏/评测/上下文"@zh .
+
+udom:AssetElement a owl:Class ; rdfs:subClassOf udom:Element ;
+    rdfs:label "资产层"@zh ; rdfs:comment "存量系统/数据/接口/组织——被改造与被包装的对象"@zh .
+
+# ===== 类型（按层） =====
+
+udom:Evidence a owl:Class ;
+    rdfs:subClassOf udom:Element ;
+    rdfs:label "证据"@zh ; rdfs:label "Evidence"@en ;
+    rdfs:comment "证据——模型元素到知识库文档片段的溯源链接"@zh ;
+    udom:clues "文档,白皮书,需求说明书,接口文档,会议纪要" .
+
+udom:Vision a owl:Class ;
+    rdfs:subClassOf udom:MotivationElement ;
+    rdfs:label "愿景"@zh ; rdfs:label "Vision"@en ;
+    rdfs:comment "愿景——组织未来期望成为的样子（BMM End）"@zh ;
+    udom:clues "愿景,致力于成为,vision" .
+
+udom:Mission a owl:Class ;
+    rdfs:subClassOf udom:MotivationElement ;
+    rdfs:label "使命"@zh ; rdfs:label "Mission"@en ;
+    rdfs:comment "使命——使愿景可操作的持续性经营活动（BMM Mean）"@zh ;
+    udom:clues "使命,职责是,mission" .
+
+udom:Goal a owl:Class ;
+    rdfs:subClassOf udom:MotivationElement ;
+    rdfs:label "目标"@zh ; rdfs:label "Goal"@en ;
+    rdfs:comment "目标——定性的长期期望结果（BMM Desired Result）"@zh ;
+    udom:clues "目标,旨在,goal" .
+
+udom:Objective a owl:Class ;
+    rdfs:subClassOf udom:MotivationElement ;
+    rdfs:label "指标/具体目标"@zh ; rdfs:label "Objective"@en ;
+    rdfs:comment "指标/具体目标——可度量、有时限的结果台阶（BMM Objective ≈ KPI）"@zh ;
+    udom:clues "KPI,指标,达成率,目标值,提升至,降低至" .
+
+udom:Strategy a owl:Class ;
+    rdfs:subClassOf udom:MotivationElement ;
+    rdfs:label "战略"@zh ; rdfs:label "Strategy"@en ;
+    rdfs:comment "战略——通向目标的行动方针（BMM Course of Action）"@zh ;
+    udom:clues "战略,策略,方针,strategy" .
+
+udom:Tactic a owl:Class ;
+    rdfs:subClassOf udom:MotivationElement ;
+    rdfs:label "战术"@zh ; rdfs:label "Tactic"@en ;
+    rdfs:comment "战术——落实战略的具体短期行动（BMM Course of Action）"@zh ;
+    udom:clues "举措,战术,落地动作" .
+
+udom:BusinessPolicy a owl:Class ;
+    rdfs:subClassOf udom:MotivationElement ;
+    rdfs:label "业务政策"@zh ; rdfs:label "BusinessPolicy"@en ;
+    rdfs:comment "业务政策——不可直接执行、用于指导行动方针的指令（BMM Directive）"@zh ;
+    udom:clues "政策,原则上,必须保留,不得" .
+
+udom:BusinessRule a owl:Class ;
+    rdfs:subClassOf udom:MotivationElement ;
+    rdfs:label "业务规则"@zh ; rdfs:label "BusinessRule"@en ;
+    rdfs:comment "业务规则——可操作、可强制执行的指令（BMM Element of Guidance）"@zh ;
+    udom:clues "规则,不得超过,必须审批,校验,阈值" .
+
+udom:Influencer a owl:Class ;
+    rdfs:subClassOf udom:MotivationElement ;
+    rdfs:label "影响因子"@zh ; rdfs:label "Influencer"@en ;
+    rdfs:comment "影响因子——影响企业动机实现的内外部因素（BMM Influencer）"@zh ;
+    udom:clues "影响因素,监管要求,市场变化,制约" .
+
+udom:Assessment a owl:Class ;
+    rdfs:subClassOf udom:MotivationElement ;
+    rdfs:label "评估"@zh ; rdfs:label "Assessment"@en ;
+    rdfs:comment "评估——对影响因子的判断（如 SWOT）"@zh ;
+    udom:clues "评估,SWOT,优势,劣势,机会,威胁" .
+
+udom:Risk a owl:Class ;
+    rdfs:subClassOf udom:MotivationElement ;
+    rdfs:label "风险"@zh ; rdfs:label "Risk"@en ;
+    rdfs:comment "风险——对目标/指标的潜在负面影响（BMM Potential Impact）"@zh ;
+    udom:clues "风险,可能导致,隐患" .
+
+udom:Domain a owl:Class ;
+    rdfs:subClassOf udom:DomainElement ;
+    rdfs:label "子域"@zh ; rdfs:label "Domain"@en ;
+    rdfs:comment "子域——业务能力的领域分区"@zh ;
+    udom:clues "核心域,支撑域,通用域,业务域" .
+
+udom:BusinessCapability a owl:Class ;
+    rdfs:subClassOf udom:DomainElement ;
+    rdfs:label "业务能力"@zh ; rdfs:label "BusinessCapability"@en ;
+    rdfs:comment "业务能力——组织\"做什么\"的稳定能力（桥接 BMM 战略与 DDD 上下文）"@zh ;
+    udom:clues "能力,能力地图,capability" .
+
+udom:BoundedContext a owl:Class ;
+    rdfs:subClassOf udom:DomainElement ;
+    rdfs:label "限界上下文"@zh ; rdfs:label "BoundedContext"@en ;
+    rdfs:comment "限界上下文——模型与通用语言的一致性边界（智能体归属的单位）"@zh ;
+    udom:clues "上下文,边界,模块,bounded context" .
+
+udom:GlossaryTerm a owl:Class ;
+    rdfs:subClassOf udom:DomainElement ;
+    rdfs:label "通用语言词条"@zh ; rdfs:label "GlossaryTerm"@en ;
+    rdfs:comment "通用语言词条——上下文内有精确定义的术语"@zh ;
+    udom:clues "术语,定义,是指,名词解释" .
+
+udom:Aggregate a owl:Class ;
+    rdfs:subClassOf udom:DomainElement ;
+    rdfs:label "聚合（根）"@zh ; rdfs:label "Aggregate"@en ;
+    rdfs:comment "聚合（根）——一致性/事务边界，业务不变量的代码化载体"@zh ;
+    udom:clues "工单,订单,账户,不变量,必须保证" .
+
+udom:Entity a owl:Class ;
+    rdfs:subClassOf udom:DomainElement ;
+    rdfs:label "实体"@zh ; rdfs:label "Entity"@en ;
+    rdfs:comment "实体——有身份标识的领域对象"@zh ;
+    udom:clues "实体,编号,唯一标识" .
+
+udom:ValueObject a owl:Class ;
+    rdfs:subClassOf udom:DomainElement ;
+    rdfs:label "值对象"@zh ; rdfs:label "ValueObject"@en ;
+    rdfs:comment "值对象——以属性值判等的不可变对象"@zh ;
+    udom:clues "金额,地址,值对象" .
+
+udom:DomainService a owl:Class ;
+    rdfs:subClassOf udom:DomainElement ;
+    rdfs:label "领域服务"@zh ; rdfs:label "DomainService"@en ;
+    rdfs:comment "领域服务——不天然属于任一实体的领域操作（无状态）"@zh ;
+    udom:clues "领域服务,计算,定责" .
+
+udom:DomainEvent a owl:Class ;
+    rdfs:subClassOf udom:DomainElement ;
+    rdfs:label "领域事件"@zh ; rdfs:label "DomainEvent"@en ;
+    rdfs:comment "领域事件——领域中已发生且被关心的事实"@zh ;
+    udom:clues "事件,已创建,已升级,已赔付" .
+
+udom:ApplicationService a owl:Class ;
+    rdfs:subClassOf udom:DomainElement ;
+    rdfs:label "应用服务"@zh ; rdfs:label "ApplicationService"@en ;
+    rdfs:comment "应用服务——编排用例、对外的确定性操作入口（Tool 的后端）"@zh .
+
+udom:BusinessProcess a owl:Class ;
+    rdfs:subClassOf udom:DomainElement ;
+    rdfs:label "业务流程"@zh ; rdfs:label "BusinessProcess"@en ;
+    rdfs:comment "业务流程——跨角色/系统的业务步骤序列（v0.1.1 PoC 增补：存量流程的载体，可被 Skill 自动化）"@zh ;
+    udom:clues "流程,环节,步骤,审批流,处理过程" .
+
+udom:Agent a owl:Class ;
+    rdfs:subClassOf udom:AgentElement ;
+    rdfs:label "智能体"@zh ; rdfs:label "Agent"@en ;
+    rdfs:comment "智能体——章程=使命+边界+自主级别+升级规则（一个智能体归属一个限界上下文）"@zh ;
+    udom:clues "智能体,助手,专员,agent,机器人" .
+
+udom:Skill a owl:Class ;
+    rdfs:subClassOf udom:AgentElement ;
+    rdfs:label "技能"@zh ; rdfs:label "Skill"@en ;
+    rdfs:comment "技能——程序性知识(指令)+工具+资源的可组合能力包"@zh ;
+    udom:clues "技能,流程,SOP,操作手册,skill" .
+
+udom:Tool a owl:Class ;
+    rdfs:subClassOf udom:AgentElement ;
+    rdfs:label "工具契约"@zh ; rdfs:label "Tool"@en ;
+    rdfs:comment "工具契约——智能体可调用的确定性操作（Schema+语义+副作用声明）"@zh ;
+    udom:clues "接口,查询,创建,回调,API,工具" .
+
+udom:MCPServer a owl:Class ;
+    rdfs:subClassOf udom:AgentElement ;
+    rdfs:label "MCP 服务"@zh ; rdfs:label "MCPServer"@en ;
+    rdfs:comment "MCP 服务——把系统/上下文能力以工具形式暴露（≈ DDD 的 ACL/开放主机服务）"@zh ;
+    udom:clues "MCP,服务封装,适配层,防腐层" .
+
+udom:ContextDesign a owl:Class ;
+    rdfs:subClassOf udom:AgentElement ;
+    rdfs:label "上下文工程设计"@zh ; rdfs:label "ContextDesign"@en ;
+    rdfs:comment "上下文工程设计——知识源、检索策略、上下文预算、记忆配置"@zh ;
+    udom:clues "知识库,检索,RAG,上下文" .
+
+udom:Memory a owl:Class ;
+    rdfs:subClassOf udom:AgentElement ;
+    rdfs:label "记忆"@zh ; rdfs:label "Memory"@en ;
+    rdfs:comment "记忆——分层记忆设计"@zh ;
+    udom:clues "记忆,历史,会话,经验" .
+
+udom:Eval a owl:Class ;
+    rdfs:subClassOf udom:AgentElement ;
+    rdfs:label "评测"@zh ; rdfs:label "Eval"@en ;
+    rdfs:comment "评测——智能体行为的可执行规约（spec-by-example），回归门禁"@zh ;
+    udom:clues "评测,测试集,验收标准,准确率" .
+
+udom:Guardrail a owl:Class ;
+    rdfs:subClassOf udom:AgentElement ;
+    rdfs:label "护栏"@zh ; rdfs:label "Guardrail"@en ;
+    rdfs:comment "护栏——业务规则/政策的可执行化屏障"@zh ;
+    udom:clues "护栏,拦截,审批,脱敏,风控" .
+
+udom:ObservabilityProfile a owl:Class ;
+    rdfs:subClassOf udom:AgentElement ;
+    rdfs:label "可观测配置"@zh ; rdfs:label "ObservabilityProfile"@en ;
+    rdfs:comment "可观测配置——trace、成本、质量指标"@zh ;
+    udom:clues "监控,追踪,成本,token" .
+
+udom:System a owl:Class ;
+    rdfs:subClassOf udom:AssetElement ;
+    rdfs:label "系统"@zh ; rdfs:label "System"@en ;
+    rdfs:comment "系统——存量/外采/新建的应用系统（被改造或被 MCP 包装的对象）"@zh ;
+    udom:clues "系统,平台,中台,ERP,OMS,CRM" .
+
+udom:DataStore a owl:Class ;
+    rdfs:subClassOf udom:AssetElement ;
+    rdfs:label "数据存储"@zh ; rdfs:label "DataStore"@en ;
+    rdfs:comment "数据存储——存量库表/数据实体（逆向建模的输入）"@zh ;
+    udom:clues "数据库,表,数据实体" .
+
+udom:Interface a owl:Class ;
+    rdfs:subClassOf udom:AssetElement ;
+    rdfs:label "既有接口"@zh ; rdfs:label "Interface"@en ;
+    rdfs:comment "既有接口——存量系统对外 API"@zh ;
+    udom:clues "接口,API,HTTP,RPC" .
+
+udom:OrganizationUnit a owl:Class ;
+    rdfs:subClassOf udom:AssetElement ;
+    rdfs:label "组织单元"@zh ; rdfs:label "OrganizationUnit"@en ;
+    rdfs:comment "组织单元——业务/IT 归属方，元素 owner"@zh ;
+    udom:clues "应用服务,用例,编排" .
+
+# ===== 元素属性 =====
+
+udom:docTitle a owl:DatatypeProperty ; rdfs:label "来源文档标题"@zh .
+
+udom:docType a owl:ObjectProperty ; rdfs:label "doc_type"@zh .
+
+udom:fragment a owl:DatatypeProperty ; rdfs:label "原文片段（摘录，非转述）"@zh .
+
+udom:location a owl:DatatypeProperty ; rdfs:label "章节/页码/URL"@zh .
+
+udom:kb a owl:DatatypeProperty ; rdfs:label "知识库标识（多知识库部署时建议必填）"@zh .
+
+udom:statement a owl:DatatypeProperty ; rdfs:label "statement"@zh .
+
+udom:enforcement a owl:ObjectProperty ; rdfs:label "code=落在领域模型代码; guardrail=智能体护栏; manual=人工; hybrid=组合"@zh .
+
+udom:subKind a owl:ObjectProperty ; rdfs:label "kind"@zh .
+
+udom:technique a owl:ObjectProperty ; rdfs:label "technique"@zh .
+
+udom:finding a owl:DatatypeProperty ; rdfs:label "finding"@zh .
+
+udom:severity a owl:ObjectProperty ; rdfs:label "severity"@zh .
+
+udom:likelihood a owl:ObjectProperty ; rdfs:label "likelihood"@zh .
+
+udom:level a owl:DatatypeProperty ; rdfs:label "能力层级 1-3"@zh .
+
+udom:term a owl:DatatypeProperty ; rdfs:label "term"@zh .
+
+udom:definition a owl:DatatypeProperty ; rdfs:label "definition"@zh .
+
+udom:invariants a owl:DatatypeProperty ; rdfs:label "不变量列表"@zh .
+
+udom:identity a owl:DatatypeProperty ; rdfs:label "标识字段"@zh .
+
+udom:attributes a owl:DatatypeProperty ; rdfs:label "attributes"@zh .
+
+udom:payload a owl:DatatypeProperty ; rdfs:label "payload"@zh .
+
+udom:operations a owl:DatatypeProperty ; rdfs:label "operations"@zh .
+
+udom:steps a owl:DatatypeProperty ; rdfs:label "步骤列表 [{step, actor?, system?}]"@zh .
+
+udom:autonomy a owl:ObjectProperty ; rdfs:label "autonomy"@zh .
+
+udom:instructions a owl:DatatypeProperty ; rdfs:label "操作指令/SOP（程序性知识）"@zh .
+
+udom:semantics a owl:DatatypeProperty ; rdfs:label "给 LLM 看的自然语言语义描述（须用通用语言）"@zh .
+
+udom:sideEffects a owl:ObjectProperty ; rdfs:label "side_effects"@zh .
+
+udom:idempotent a owl:DatatypeProperty ; rdfs:label "布尔——是否幂等"@zh .
+
+udom:permissions a owl:DatatypeProperty ; rdfs:label "所需权限范围列表"@zh .
+
+udom:pattern a owl:ObjectProperty ; rdfs:label "pattern"@zh .
+
+udom:retrievalStrategy a owl:DatatypeProperty ; rdfs:label "retrieval_strategy"@zh .
+
+udom:contextBudgetTokens a owl:DatatypeProperty ; rdfs:label "context_budget_tokens"@zh .
+
+udom:tier a owl:ObjectProperty ; rdfs:label "tier"@zh .
+
+udom:store a owl:DatatypeProperty ; rdfs:label "store"@zh .
+
+udom:retention a owl:DatatypeProperty ; rdfs:label "retention"@zh .
+
+udom:passCriteria a owl:DatatypeProperty ; rdfs:label "通过标准（含阈值）"@zh .
+
+udom:action a owl:ObjectProperty ; rdfs:label "action"@zh .
+
+udom:metrics a owl:DatatypeProperty ; rdfs:label "metrics"@zh .
+
+udom:criticality a owl:ObjectProperty ; rdfs:label "criticality"@zh .
+
+udom:protocol a owl:DatatypeProperty ; rdfs:label "protocol"@zh .
+
+udom:spec_ref a owl:DatatypeProperty ; rdfs:label "spec_ref"@zh .
+
+udom:metricName a owl:DatatypeProperty ; rdfs:label "metric.name"@zh .
+
+udom:metricUnit a owl:DatatypeProperty ; rdfs:label "metric.unit"@zh .
+
+udom:metricTarget a owl:DatatypeProperty ; rdfs:label "metric.target"@zh .
+
+udom:metricBaseline a owl:DatatypeProperty ; rdfs:label "metric.baseline"@zh .
+
+udom:metricDeadline a owl:DatatypeProperty ; rdfs:label "metric.deadline"@zh .
+
+udom:charterScope_in a owl:DatatypeProperty ; rdfs:label "charter.scope_in"@zh .
+
+udom:charterScope_out a owl:DatatypeProperty ; rdfs:label "charter.scope_out"@zh .
+
+# ===== 关系（对象属性） =====
+
+udom:makesOperative a owl:ObjectProperty ;
+    rdfs:domain udom:Mission ;
+    rdfs:range udom:Vision ;
+    rdfs:comment "card=0..1"@zh .
+
+udom:measures a owl:ObjectProperty ;
+    rdfs:domain udom:Objective ;
+    rdfs:range udom:Goal ;
+    rdfs:comment "card=1..*"@zh .
+
+udom:channelsEffortsToward a owl:ObjectProperty ;
+    rdfs:domain udom:Strategy ;
+    rdfs:range udom:Goal ;
+    rdfs:comment "card=0..*"@zh .
+
+udom:implements a owl:ObjectProperty ;
+    rdfs:domain udom:Tactic ;
+    rdfs:range udom:Strategy ;
+    rdfs:comment "card=0..1"@zh .
+
+udom:governs a owl:ObjectProperty ;
+    rdfs:domain udom:BusinessPolicy ;
+    rdfs:range [ a owl:Class ; owl:unionOf ( udom:Strategy udom:Tactic udom:Agent ) ] ;
+    rdfs:comment "card=0..*"@zh .
+
+udom:derivesFrom a owl:ObjectProperty ;
+    rdfs:domain udom:BusinessRule ;
+    rdfs:range udom:BusinessPolicy ;
+    rdfs:comment "card=0..*"@zh .
+
+udom:enforcedBy a owl:ObjectProperty ;
+    rdfs:domain udom:BusinessRule ;
+    rdfs:range [ a owl:Class ; owl:unionOf ( udom:Guardrail udom:ApplicationService ) ] ;
+    rdfs:comment "card=0..*"@zh .
+
+udom:assesses a owl:ObjectProperty ;
+    rdfs:domain udom:Assessment ;
+    rdfs:range udom:Influencer ;
+    rdfs:comment "card=0..*"@zh .
+
+udom:threatens a owl:ObjectProperty ;
+    rdfs:domain udom:Risk ;
+    rdfs:range [ a owl:Class ; owl:unionOf ( udom:Goal udom:Objective ) ] ;
+    rdfs:comment "card=0..*"@zh .
+
+udom:enables a owl:ObjectProperty ;
+    rdfs:domain udom:BusinessCapability ;
+    rdfs:range udom:Strategy ;
+    rdfs:comment "card=0..*"@zh .
+
+udom:realizes a owl:ObjectProperty ;
+    rdfs:domain [ a owl:Class ; owl:unionOf ( udom:BoundedContext udom:Skill udom:BusinessProcess ) ] ;
+    rdfs:range udom:BusinessCapability ;
+    rdfs:comment "card=0..*"@zh .
+
+udom:within a owl:ObjectProperty ;
+    rdfs:domain udom:BoundedContext ;
+    rdfs:range udom:Domain ;
+    rdfs:comment "card=0..1"@zh .
+
+udom:contains a owl:ObjectProperty ;
+    rdfs:domain udom:BoundedContext ;
+    rdfs:range [ a owl:Class ; owl:unionOf ( udom:Aggregate udom:Entity udom:ValueObject udom:DomainService udom:DomainEvent udom:ApplicationService udom:GlossaryTerm udom:BusinessProcess ) ] ;
+    rdfs:comment "card=0..*"@zh .
+
+udom:partOf a owl:ObjectProperty ;
+    rdfs:domain [ a owl:Class ; owl:unionOf ( udom:Entity udom:ValueObject ) ] ;
+    rdfs:range udom:Aggregate ;
+    rdfs:comment "card=0..1"@zh .
+
+udom:raises a owl:ObjectProperty ;
+    rdfs:domain [ a owl:Class ; owl:unionOf ( udom:Aggregate udom:DomainService ) ] ;
+    rdfs:range udom:DomainEvent ;
+    rdfs:comment "card=0..*"@zh .
+
+udom:contextRelationship a owl:ObjectProperty ;
+    rdfs:domain udom:BoundedContext ;
+    rdfs:range udom:BoundedContext ;
+    rdfs:comment "card=0..*"@zh .
+
+udom:hasMission a owl:ObjectProperty ;
+    rdfs:domain udom:Agent ;
+    rdfs:range udom:Mission ;
+    rdfs:comment "card=1"@zh .
+
+udom:hasObjective a owl:ObjectProperty ;
+    rdfs:domain udom:Agent ;
+    rdfs:range udom:Objective ;
+    rdfs:comment "card=0..*"@zh .
+
+udom:belongsTo a owl:ObjectProperty ;
+    rdfs:domain udom:Agent ;
+    rdfs:range udom:BoundedContext ;
+    rdfs:comment "card=1"@zh .
+
+udom:escalatesVia a owl:ObjectProperty ;
+    rdfs:domain udom:Agent ;
+    rdfs:range udom:BusinessPolicy ;
+    rdfs:comment "card=0..*"@zh .
+
+udom:ownsSkill a owl:ObjectProperty ;
+    rdfs:domain udom:Agent ;
+    rdfs:range udom:Skill ;
+    rdfs:comment "card=0..*"@zh .
+
+udom:invokes a owl:ObjectProperty ;
+    rdfs:domain udom:Skill ;
+    rdfs:range udom:Tool ;
+    rdfs:comment "card=0..*"@zh .
+
+udom:backedBy a owl:ObjectProperty ;
+    rdfs:domain udom:Tool ;
+    rdfs:range [ a owl:Class ; owl:unionOf ( udom:ApplicationService udom:DomainService udom:System udom:Interface ) ] ;
+    rdfs:comment "card=0..1"@zh .
+
+udom:wraps a owl:ObjectProperty ;
+    rdfs:domain udom:MCPServer ;
+    rdfs:range [ a owl:Class ; owl:unionOf ( udom:System udom:BoundedContext ) ] ;
+    rdfs:comment "card=1"@zh .
+
+udom:exposes a owl:ObjectProperty ;
+    rdfs:domain udom:MCPServer ;
+    rdfs:range udom:Tool ;
+    rdfs:comment "card=0..*"@zh .
+
+udom:hasContextDesign a owl:ObjectProperty ;
+    rdfs:domain udom:Agent ;
+    rdfs:range udom:ContextDesign ;
+    rdfs:comment "card=0..1"@zh .
+
+udom:usesMemory a owl:ObjectProperty ;
+    rdfs:domain [ a owl:Class ; owl:unionOf ( udom:Agent udom:Skill ) ] ;
+    rdfs:range udom:Memory ;
+    rdfs:comment "card=0..*"@zh .
+
+udom:validates a owl:ObjectProperty ;
+    rdfs:domain udom:Eval ;
+    rdfs:range [ a owl:Class ; owl:unionOf ( udom:Agent udom:Skill ) ] ;
+    rdfs:comment "card=0..*"@zh .
+
+udom:specifies a owl:ObjectProperty ;
+    rdfs:domain udom:Eval ;
+    rdfs:range udom:BusinessRule ;
+    rdfs:comment "card=0..*"@zh .
+
+udom:enforces a owl:ObjectProperty ;
+    rdfs:domain udom:Guardrail ;
+    rdfs:range [ a owl:Class ; owl:unionOf ( udom:BusinessRule udom:BusinessPolicy ) ] ;
+    rdfs:comment "card=0..*"@zh .
+
+udom:protects a owl:ObjectProperty ;
+    rdfs:domain udom:Guardrail ;
+    rdfs:range [ a owl:Class ; owl:unionOf ( udom:Agent udom:Skill ) ] ;
+    rdfs:comment "card=0..*"@zh .
+
+udom:ownedBy a owl:ObjectProperty ;
+    rdfs:domain [ a owl:Class ; owl:unionOf ( udom:System udom:BoundedContext ) ] ;
+    rdfs:range udom:OrganizationUnit ;
+    rdfs:comment "card=0..1"@zh .
+
+udom:automates a owl:ObjectProperty ;
+    rdfs:domain [ a owl:Class ; owl:unionOf ( udom:Skill udom:Agent ) ] ;
+    rdfs:range udom:BusinessProcess ;
+    rdfs:comment "card=0..*"@zh .
+
+# contextRelationship 的模式子属性（R9 词汇表）
+
+udom:ctx_partnership a owl:ObjectProperty ; rdfs:subPropertyOf udom:contextRelationship ;
+    rdfs:label "上下文关系:partnership"@zh .
+
+udom:ctx_shared_kernel a owl:ObjectProperty ; rdfs:subPropertyOf udom:contextRelationship ;
+    rdfs:label "上下文关系:shared_kernel"@zh .
+
+udom:ctx_customer_supplier a owl:ObjectProperty ; rdfs:subPropertyOf udom:contextRelationship ;
+    rdfs:label "上下文关系:customer_supplier"@zh .
+
+udom:ctx_conformist a owl:ObjectProperty ; rdfs:subPropertyOf udom:contextRelationship ;
+    rdfs:label "上下文关系:conformist"@zh .
+
+udom:ctx_acl a owl:ObjectProperty ; rdfs:subPropertyOf udom:contextRelationship ;
+    rdfs:label "上下文关系:acl"@zh .
+
+udom:ctx_ohs a owl:ObjectProperty ; rdfs:subPropertyOf udom:contextRelationship ;
+    rdfs:label "上下文关系:ohs"@zh .
+
+udom:ctx_published_language a owl:ObjectProperty ; rdfs:subPropertyOf udom:contextRelationship ;
+    rdfs:label "上下文关系:published_language"@zh .
+
+udom:ctx_separate_ways a owl:ObjectProperty ; rdfs:subPropertyOf udom:contextRelationship ;
+    rdfs:label "上下文关系:separate_ways"@zh .
+
+udom:ctx_big_ball_of_mud a owl:ObjectProperty ; rdfs:subPropertyOf udom:contextRelationship ;
+    rdfs:label "上下文关系:big_ball_of_mud"@zh .
+
+# ===== 基数限制（对应 R1/R2/R7 等） =====
+
+udom:Mission rdfs:subClassOf [ a owl:Restriction ; owl:onProperty udom:makesOperative ;
+    owl:onClass udom:Vision ; owl:maxQualifiedCardinality "1"^^xsd:nonNegativeInteger ] .  # 至多 1
+
+udom:Objective rdfs:subClassOf [ a owl:Restriction ; owl:onProperty udom:measures ;
+    owl:onClass udom:Goal ; owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ] .  # 至少 1
+
+udom:Tactic rdfs:subClassOf [ a owl:Restriction ; owl:onProperty udom:implements ;
+    owl:onClass udom:Strategy ; owl:maxQualifiedCardinality "1"^^xsd:nonNegativeInteger ] .  # 至多 1
+
+udom:BoundedContext rdfs:subClassOf [ a owl:Restriction ; owl:onProperty udom:within ;
+    owl:onClass udom:Domain ; owl:maxQualifiedCardinality "1"^^xsd:nonNegativeInteger ] .  # 至多 1
+
+udom:Entity rdfs:subClassOf [ a owl:Restriction ; owl:onProperty udom:partOf ;
+    owl:onClass udom:Aggregate ; owl:maxQualifiedCardinality "1"^^xsd:nonNegativeInteger ] .  # 至多 1
+
+udom:ValueObject rdfs:subClassOf [ a owl:Restriction ; owl:onProperty udom:partOf ;
+    owl:onClass udom:Aggregate ; owl:maxQualifiedCardinality "1"^^xsd:nonNegativeInteger ] .  # 至多 1
+
+udom:Agent rdfs:subClassOf [ a owl:Restriction ; owl:onProperty udom:hasMission ;
+    owl:onClass udom:Mission ; owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ] .  # 恰好 1
+
+udom:Agent rdfs:subClassOf [ a owl:Restriction ; owl:onProperty udom:belongsTo ;
+    owl:onClass udom:BoundedContext ; owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ] .  # 恰好 1
+
+udom:Tool rdfs:subClassOf [ a owl:Restriction ; owl:onProperty udom:backedBy ;
+    owl:onClass [ a owl:Class ; owl:unionOf ( udom:ApplicationService udom:DomainService udom:System udom:Interface ) ] ; owl:maxQualifiedCardinality "1"^^xsd:nonNegativeInteger ] .  # 至多 1
+
+udom:MCPServer rdfs:subClassOf [ a owl:Restriction ; owl:onProperty udom:wraps ;
+    owl:onClass [ a owl:Class ; owl:unionOf ( udom:System udom:BoundedContext ) ] ; owl:qualifiedCardinality "1"^^xsd:nonNegativeInteger ] .  # 恰好 1
+
+udom:Agent rdfs:subClassOf [ a owl:Restriction ; owl:onProperty udom:hasContextDesign ;
+    owl:onClass udom:ContextDesign ; owl:maxQualifiedCardinality "1"^^xsd:nonNegativeInteger ] .  # 至多 1
+
+udom:System rdfs:subClassOf [ a owl:Restriction ; owl:onProperty udom:ownedBy ;
+    owl:onClass udom:OrganizationUnit ; owl:maxQualifiedCardinality "1"^^xsd:nonNegativeInteger ] .  # 至多 1
+
+udom:BoundedContext rdfs:subClassOf [ a owl:Restriction ; owl:onProperty udom:ownedBy ;
+    owl:onClass udom:OrganizationUnit ; owl:maxQualifiedCardinality "1"^^xsd:nonNegativeInteger ] .  # 至多 1
+
+udom:Skill rdfs:subClassOf [ a owl:Restriction ; owl:onProperty udom:realizes ;
+    owl:onClass udom:BusinessCapability ; owl:minQualifiedCardinality "1"^^xsd:nonNegativeInteger ] .  # R7
+
+# ===== 枚举类与个体 =====
+udom:Status a owl:Class ; rdfs:label "治理状态"@zh .
+udom:Origin a owl:Class ; rdfs:label "来源"@zh .
+udom:enum_status_draft a udom:Status ; rdfs:label "draft"@en .
+udom:enum_status_proposed a udom:Status ; rdfs:label "proposed"@en .
+udom:enum_status_reviewed a udom:Status ; rdfs:label "reviewed"@en .
+udom:enum_status_approved a udom:Status ; rdfs:label "approved"@en .
+udom:enum_status_deprecated a udom:Status ; rdfs:label "deprecated"@en .
+udom:enum_origin_human a udom:Origin ; rdfs:label "human"@en .
+udom:enum_origin_agent a udom:Origin ; rdfs:label "agent"@en .
+udom:enum_origin_import a udom:Origin ; rdfs:label "import"@en .
+udom:enum_autonomy_L0 a owl:NamedIndividual ; rdfs:label "L0"@en .
+udom:enum_autonomy_L1 a owl:NamedIndividual ; rdfs:label "L1"@en .
+udom:enum_autonomy_L2 a owl:NamedIndividual ; rdfs:label "L2"@en .
+udom:enum_autonomy_L3 a owl:NamedIndividual ; rdfs:label "L3"@en .
+udom:enum_autonomy_L4 a owl:NamedIndividual ; rdfs:label "L4"@en .
+udom:enum_severity_low a owl:NamedIndividual ; rdfs:label "low"@en .
+udom:enum_severity_medium a owl:NamedIndividual ; rdfs:label "medium"@en .
+udom:enum_severity_high a owl:NamedIndividual ; rdfs:label "high"@en .
+udom:enum_ctx_pattern_partnership a owl:NamedIndividual ; rdfs:label "partnership"@en .
+udom:enum_ctx_pattern_shared_kernel a owl:NamedIndividual ; rdfs:label "shared_kernel"@en .
+udom:enum_ctx_pattern_customer_supplier a owl:NamedIndividual ; rdfs:label "customer_supplier"@en .
+udom:enum_ctx_pattern_conformist a owl:NamedIndividual ; rdfs:label "conformist"@en .
+udom:enum_ctx_pattern_acl a owl:NamedIndividual ; rdfs:label "acl"@en .
+udom:enum_ctx_pattern_ohs a owl:NamedIndividual ; rdfs:label "ohs"@en .
+udom:enum_ctx_pattern_published_language a owl:NamedIndividual ; rdfs:label "published_language"@en .
+udom:enum_ctx_pattern_separate_ways a owl:NamedIndividual ; rdfs:label "separate_ways"@en .
+udom:enum_ctx_pattern_big_ball_of_mud a owl:NamedIndividual ; rdfs:label "big_ball_of_mud"@en .
+udom:enum_docType_business a owl:NamedIndividual ; rdfs:label "business"@en .
+udom:enum_docType_technical a owl:NamedIndividual ; rdfs:label "technical"@en .
+udom:enum_docType_regulatory a owl:NamedIndividual ; rdfs:label "regulatory"@en .
+udom:enum_docType_meeting a owl:NamedIndividual ; rdfs:label "meeting"@en .
+udom:enum_docType_code a owl:NamedIndividual ; rdfs:label "code"@en .
+udom:enum_enforcement_code a owl:NamedIndividual ; rdfs:label "code"@en .
+udom:enum_enforcement_guardrail a owl:NamedIndividual ; rdfs:label "guardrail"@en .
+udom:enum_enforcement_manual a owl:NamedIndividual ; rdfs:label "manual"@en .
+udom:enum_enforcement_hybrid a owl:NamedIndividual ; rdfs:label "hybrid"@en .
+udom:enum_subKind_internal a owl:NamedIndividual ; rdfs:label "internal"@en .
+udom:enum_subKind_external a owl:NamedIndividual ; rdfs:label "external"@en .
+udom:enum_technique_swot a owl:NamedIndividual ; rdfs:label "swot"@en .
+udom:enum_technique_other a owl:NamedIndividual ; rdfs:label "other"@en .
+udom:enum_severity_low a owl:NamedIndividual ; rdfs:label "low"@en .
+udom:enum_severity_medium a owl:NamedIndividual ; rdfs:label "medium"@en .
+udom:enum_severity_high a owl:NamedIndividual ; rdfs:label "high"@en .
+udom:enum_likelihood_low a owl:NamedIndividual ; rdfs:label "low"@en .
+udom:enum_likelihood_medium a owl:NamedIndividual ; rdfs:label "medium"@en .
+udom:enum_likelihood_high a owl:NamedIndividual ; rdfs:label "high"@en .
+udom:enum_subKind_core a owl:NamedIndividual ; rdfs:label "core"@en .
+udom:enum_subKind_supporting a owl:NamedIndividual ; rdfs:label "supporting"@en .
+udom:enum_subKind_generic a owl:NamedIndividual ; rdfs:label "generic"@en .
+udom:enum_autonomy_L0 a owl:NamedIndividual ; rdfs:label "L0"@en .
+udom:enum_autonomy_L1 a owl:NamedIndividual ; rdfs:label "L1"@en .
+udom:enum_autonomy_L2 a owl:NamedIndividual ; rdfs:label "L2"@en .
+udom:enum_autonomy_L3 a owl:NamedIndividual ; rdfs:label "L3"@en .
+udom:enum_autonomy_L4 a owl:NamedIndividual ; rdfs:label "L4"@en .
+udom:enum_sideEffects_none a owl:NamedIndividual ; rdfs:label "none"@en .
+udom:enum_sideEffects_read a owl:NamedIndividual ; rdfs:label "read"@en .
+udom:enum_sideEffects_write a owl:NamedIndividual ; rdfs:label "write"@en .
+udom:enum_sideEffects_external a owl:NamedIndividual ; rdfs:label "external"@en .
+udom:enum_pattern_acl a owl:NamedIndividual ; rdfs:label "acl"@en .
+udom:enum_pattern_ohs a owl:NamedIndividual ; rdfs:label "ohs"@en .
+udom:enum_pattern_published_language a owl:NamedIndividual ; rdfs:label "published_language"@en .
+udom:enum_pattern_hybrid a owl:NamedIndividual ; rdfs:label "hybrid"@en .
+udom:enum_tier_working a owl:NamedIndividual ; rdfs:label "working"@en .
+udom:enum_tier_episodic a owl:NamedIndividual ; rdfs:label "episodic"@en .
+udom:enum_tier_semantic a owl:NamedIndividual ; rdfs:label "semantic"@en .
+udom:enum_subKind_golden_case a owl:NamedIndividual ; rdfs:label "golden_case"@en .
+udom:enum_subKind_rubric a owl:NamedIndividual ; rdfs:label "rubric"@en .
+udom:enum_subKind_trajectory a owl:NamedIndividual ; rdfs:label "trajectory"@en .
+udom:enum_subKind_regression a owl:NamedIndividual ; rdfs:label "regression"@en .
+udom:enum_subKind_input_filter a owl:NamedIndividual ; rdfs:label "input_filter"@en .
+udom:enum_subKind_output_filter a owl:NamedIndividual ; rdfs:label "output_filter"@en .
+udom:enum_subKind_validator a owl:NamedIndividual ; rdfs:label "validator"@en .
+udom:enum_subKind_hitl a owl:NamedIndividual ; rdfs:label "hitl"@en .
+udom:enum_subKind_rate_limit a owl:NamedIndividual ; rdfs:label "rate_limit"@en .
+udom:enum_action_block a owl:NamedIndividual ; rdfs:label "block"@en .
+udom:enum_action_review a owl:NamedIndividual ; rdfs:label "review"@en .
+udom:enum_action_redact a owl:NamedIndividual ; rdfs:label "redact"@en .
+udom:enum_action_escalate a owl:NamedIndividual ; rdfs:label "escalate"@en .
+udom:enum_subKind_legacy a owl:NamedIndividual ; rdfs:label "legacy"@en .
+udom:enum_subKind_saas a owl:NamedIndividual ; rdfs:label "saas"@en .
+udom:enum_subKind_new a owl:NamedIndividual ; rdfs:label "new"@en .
+udom:enum_criticality_low a owl:NamedIndividual ; rdfs:label "low"@en .
+udom:enum_criticality_medium a owl:NamedIndividual ; rdfs:label "medium"@en .
+udom:enum_criticality_high a owl:NamedIndividual ; rdfs:label "high"@en .
+
+# ===== 约束规则注解（SHACL 形状属 v0.2，此处文档化） =====
+
+udom:ConstraintRule a owl:Class ; rdfs:label "约束规则"@zh .
+
+udom:severity a owl:DatatypeProperty ; rdfs:label "严重级别"@zh .
+
+udom:R1 a udom:ConstraintRule ; rdfs:label "R1"@en ;
+    udom:severity "error" ; rdfs:comment "Objective 必须 measures ≥1 个 Goal（measures.card=1..*）"@zh .
+
+udom:R2 a udom:ConstraintRule ; rdfs:label "R2"@en ;
+    udom:severity "error" ; rdfs:comment "Agent 恰有 1 个 hasMission 与 1 个 belongsTo（card=1）"@zh .
+
+udom:R3 a udom:ConstraintRule ; rdfs:label "R3"@en ;
+    udom:severity "error" ; rdfs:comment "Tool 必填 side_effects 与 idempotent（attrs.req）"@zh .
+
+udom:R4 a udom:ConstraintRule ; rdfs:label "R4"@en ;
+    udom:severity "warn" ; rdfs:comment "未废弃 BusinessRule 应有 ≥1 执行点（enforcedBy）"@zh .
+
+udom:R5 a udom:ConstraintRule ; rdfs:label "R5"@en ;
+    udom:severity "error" ; rdfs:comment "Agent.autonomy≥L2 ⇒ ≥1 个 kind=hitl 的 Guardrail protects 它，且 ≥1 个 Eval validates 它"@zh .
+
+udom:R6 a udom:ConstraintRule ; rdfs:label "R6"@en ;
+    udom:severity "warn" ; rdfs:comment "每个元素（除 Evidence）应有 ≥1 条证据链接"@zh .
+
+udom:R7 a udom:ConstraintRule ; rdfs:label "R7"@en ;
+    udom:severity "error" ; rdfs:comment "Skill 必须 realizes ≥1 个 BusinessCapability"@zh .
+
+udom:R8 a udom:ConstraintRule ; rdfs:label "R8"@en ;
+    udom:severity "warn" ; rdfs:comment "同一 BoundedContext 内 GlossaryTerm.term 应唯一"@zh .
+
+udom:R9 a udom:ConstraintRule ; rdfs:label "R9"@en ;
+    udom:severity "error" ; rdfs:comment "contextRelationship.pattern 必填且为合法枚举（结构校验执行）"@zh .
+
+udom:R10 a udom:ConstraintRule ; rdfs:label "R10"@en ;
+    udom:severity "warn" ; rdfs:comment "Mission 应 makesOperative ≥1 个 Vision"@zh .
