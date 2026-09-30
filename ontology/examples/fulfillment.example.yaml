@@ -1,0 +1,149 @@
+# =============================================================================
+# 示例实例：即时零售「履约异常处理」域的智能化改造模型
+# 演示 BMM(动机) → DDD(领域) → AgentOps(智能体) 全链路建模与溯源
+# 校验：.venv/bin/python tools/validator/validate.py ontology/metamodel.yaml 本文件
+# =============================================================================
+model: {name: 履约异常域模型, udom: "0.1.0", status: draft}
+
+elements:
+  # ---- 证据（溯源到知识库文档片段）----
+  - {id: ev-01, kind: Evidence, name: 白皮书-异常定义,
+     attrs: {doc_title: 履约业务白皮书, doc_type: business, location: "§3.2",
+             fragment: "履约异常指订单在履约过程中出现的缺货、超时、破损、地址异常等偏离正常流程的事件"}}
+  - {id: ev-02, kind: Evidence, name: OMS-接口文档,
+     attrs: {doc_title: OMS系统接口文档v2.3, doc_type: technical, location: "§5.1",
+             fragment: "GET /orders/{id} 返回订单详情；POST /compensations 创建赔付单（幂等键 idempotency_key）"}}
+  - {id: ev-03, kind: Evidence, name: 赔付运营规范,
+     attrs: {doc_title: 客服赔付运营规范, doc_type: regulatory, location: "§2.1",
+             fragment: "单笔赔付金额超过500元的，必须经人工审批后方可执行"}}
+
+  # ---- 动机层（BMM）----
+  - {id: vision-01, kind: Vision, name: 企业愿景, status: approved,
+     attrs: {statement: 成为客户最信赖的即时零售平台}, evidence: [ev-01],
+     provenance: {origin: human}}
+  - {id: mission-01, kind: Mission, name: 履约使命, status: approved,
+     attrs: {statement: 提供全渠道订单的高效履约}, evidence: [ev-01],
+     provenance: {origin: human}}
+  - {id: goal-01, kind: Goal, name: 履约体验目标,
+     attrs: {statement: 持续提升履约体验与履约效率}, evidence: [ev-01],
+     provenance: {origin: agent, agent: extractor-v1, confidence: 0.86}}
+  - {id: obj-01, kind: Objective, name: 履约准时率指标, status: proposed,
+     attrs: {statement: 履约准时率达到99.5%,
+             metric: {name: 履约准时率, unit: "%", target: 99.5, baseline: 97.8, deadline: 2026-Q4}},
+     evidence: [ev-01], provenance: {origin: agent, agent: extractor-v1, confidence: 0.91}}
+  - {id: strat-01, kind: Strategy, name: 异常自动化战略,
+     attrs: {statement: 履约异常全链路自动化处理，减少人工介入}, evidence: [ev-01],
+     provenance: {origin: agent, agent: extractor-v1, confidence: 0.8}}
+  - {id: tactic-01, kind: Tactic, name: 智能体初判战术,
+     attrs: {statement: 引入异常处理智能体替代人工初判与定责建议}, evidence: [ev-01],
+     provenance: {origin: agent, agent: extractor-v1, confidence: 0.75}}
+  - {id: pol-01, kind: BusinessPolicy, name: 资金处置审批政策, status: approved,
+     attrs: {statement: 涉及资金赔付的处置必须保留人工审批通道}, evidence: [ev-03],
+     provenance: {origin: human}}
+  - {id: rule-01, kind: BusinessRule, name: 赔付审批金额规则, status: approved,
+     attrs: {statement: 单笔赔付金额超过500元必须人工审批后方可执行, enforcement: hybrid},
+     evidence: [ev-03], provenance: {origin: human}}
+
+  # ---- 领域层（DDD）----
+  - {id: dom-01, kind: Domain, name: 履约域, attrs: {kind: core}, evidence: [ev-01],
+     provenance: {origin: agent, agent: extractor-v1, confidence: 0.88}}
+  - {id: cap-01, kind: BusinessCapability, name: 履约异常处理能力, attrs: {level: 2},
+     evidence: [ev-01], provenance: {origin: agent, agent: extractor-v1, confidence: 0.82}}
+  - {id: bc-01, kind: BoundedContext, name: 履约异常上下文,
+     description: 异常工单、定责、赔付的一致性边界, evidence: [ev-01],
+     provenance: {origin: agent, agent: extractor-v1, confidence: 0.85}}
+  - {id: bc-02, kind: BoundedContext, name: 订单上下文, description: 订单详情与履约状态,
+     evidence: [ev-02], provenance: {origin: agent, agent: extractor-v1, confidence: 0.83}}
+  - {id: term-01, kind: GlossaryTerm, name: 履约异常,
+     attrs: {term: 履约异常,
+             definition: 订单在履约过程中出现的缺货、超时、破损、地址异常等偏离正常流程的事件},
+     evidence: [ev-01], provenance: {origin: agent, agent: extractor-v1, confidence: 0.95}}
+  - {id: agg-01, kind: Aggregate, name: 履约异常工单,
+     attrs: {invariants: ["赔付金额不得超过订单实付金额", "同一异常只能有一个进行中工单"]},
+     evidence: [ev-01], provenance: {origin: agent, agent: extractor-v1, confidence: 0.78}}
+  - {id: evt-01, kind: DomainEvent, name: 异常已升级,
+     attrs: {payload: [case_id, reason, escalate_to]}, evidence: [ev-01],
+     provenance: {origin: agent, agent: extractor-v1, confidence: 0.7}}
+  - {id: svc-01, kind: ApplicationService, name: 异常工单应用服务,
+     attrs: {operations: [createCase, approveCompensation, rejectCompensation]},
+     evidence: [ev-02], provenance: {origin: agent, agent: extractor-v1, confidence: 0.8}}
+
+  # ---- 资产层 ----
+  - {id: org-01, kind: OrganizationUnit, name: 履约运营部, evidence: [ev-01],
+     provenance: {origin: human}}
+  - {id: sys-01, kind: System, name: OMS订单管理系统, attrs: {kind: legacy, criticality: high},
+     evidence: [ev-02], provenance: {origin: import, agent: code-scanner, confidence: 0.99}}
+
+  # ---- 智能体层（AgentOps）----
+  - {id: agent-01, kind: Agent, name: 履约异常处理专员, status: proposed,
+     attrs: {autonomy: L2, charter: {scope_in: [异常定责, 赔付建议, 工单流转],
+                                     scope_out: [退款审批, 客户谈判]}},
+     evidence: [ev-01], provenance: {origin: human}}
+  - {id: skill-01, kind: Skill, name: 异常定责与赔付建议,
+     attrs: {instructions: "1)查询订单与履约轨迹 2)按定责矩阵判定责任方 3)按赔付标准生成建议 4)超500元转人工"},
+     evidence: [ev-01, ev-03], provenance: {origin: human}}
+  - {id: tool-01, kind: Tool, name: queryOrderDetail,
+     attrs: {semantics: 查询订单详情与履约状态, side_effects: read, idempotent: true},
+     evidence: [ev-02], provenance: {origin: agent, agent: code-scanner, confidence: 0.97}}
+  - {id: tool-02, kind: Tool, name: createCompensation,
+     attrs: {semantics: 创建赔付单（需幂等键）, side_effects: write, idempotent: true,
+             permissions: [compensation:write]},
+     evidence: [ev-02], provenance: {origin: agent, agent: code-scanner, confidence: 0.95}}
+  - {id: mcp-01, kind: MCPServer, name: OMS-MCP, attrs: {pattern: acl},
+     description: 把遗留OMS包装为干净工具接口，屏蔽其内部模型, evidence: [ev-02],
+     provenance: {origin: human}}
+  - {id: grd-01, kind: Guardrail, name: 赔付金额校验器,
+     attrs: {kind: validator, action: block}, evidence: [ev-03], provenance: {origin: human}}
+  - {id: grd-02, kind: Guardrail, name: 人工审批台,
+     attrs: {kind: hitl, action: escalate}, evidence: [ev-03], provenance: {origin: human}}
+  - {id: eval-01, kind: Eval, name: 赔付建议回归集,
+     attrs: {kind: regression, pass_criteria: 定责准确率≥90%且超权限赔付拦截率100%},
+     evidence: [ev-03], provenance: {origin: human}}
+
+relations:
+  # 动机层链条
+  - {type: makesOperative, source: mission-01, target: vision-01}
+  - {type: measures, source: obj-01, target: goal-01}
+  - {type: channelsEffortsToward, source: strat-01, target: goal-01}
+  - {type: implements, source: tactic-01, target: strat-01}
+  - {type: governs, source: pol-01, target: strat-01}
+  - {type: governs, source: pol-01, target: agent-01}
+  - {type: derivesFrom, source: rule-01, target: pol-01}
+  # 桥接：能力 ↔ 战略 ↔ 上下文/技能
+  - {type: enables, source: cap-01, target: strat-01}
+  - {type: realizes, source: bc-01, target: cap-01}
+  - {type: realizes, source: skill-01, target: cap-01}
+  # 领域层结构
+  - {type: within, source: bc-01, target: dom-01}
+  - {type: within, source: bc-02, target: dom-01}
+  - {type: contains, source: bc-01, target: term-01}
+  - {type: contains, source: bc-01, target: agg-01}
+  - {type: contains, source: bc-01, target: evt-01}
+  - {type: contains, source: bc-01, target: svc-01}
+  - {type: raises, source: agg-01, target: evt-01}
+  - {type: contextRelationship, source: bc-02, target: bc-01, attrs: {pattern: customer_supplier}}
+  # 智能体装配
+  - {type: hasMission, source: agent-01, target: mission-01}
+  - {type: hasObjective, source: agent-01, target: obj-01}
+  - {type: belongsTo, source: agent-01, target: bc-01}
+  - {type: escalatesVia, source: agent-01, target: pol-01}
+  - {type: ownsSkill, source: agent-01, target: skill-01}
+  - {type: invokes, source: skill-01, target: tool-01}
+  - {type: invokes, source: skill-01, target: tool-02}
+  - {type: backedBy, source: tool-01, target: sys-01}
+  - {type: backedBy, source: tool-02, target: svc-01}
+  # MCP 包装与暴露
+  - {type: wraps, source: mcp-01, target: sys-01}
+  - {type: exposes, source: mcp-01, target: tool-01}
+  # 护栏与评测（R5: L2 智能体必有 hitl 护栏 + Eval）
+  - {type: enforces, source: grd-01, target: rule-01}
+  - {type: enforces, source: grd-02, target: rule-01}
+  - {type: enforcedBy, source: rule-01, target: grd-01}
+  - {type: protects, source: grd-01, target: agent-01}
+  - {type: protects, source: grd-02, target: agent-01}
+  - {type: validates, source: eval-01, target: agent-01}
+  - {type: specifies, source: eval-01, target: rule-01}
+  # 资产归属
+  - {type: ownedBy, source: sys-01, target: org-01}
+  - {type: ownedBy, source: bc-01, target: org-01}
+

@@ -1,0 +1,333 @@
+# =============================================================================
+# UDOM —— Unified Domain Ontology Metamodel 统一领域本体元模型
+# 整合 BMM(业务动机) × DDD(领域驱动设计) × AgentOps(智能体工程)
+# 本文件同时作为：① 规范 ② 抽取智能体的结构化输出契约 ③ 校验器规则源
+# 与 docs/ontology-spec.md 保持同步
+# =============================================================================
+version: "0.1.0"
+name: UDOM
+
+layers:
+  kernel:     {name: 内核层,   purpose: 元素基座 / 证据溯源 / 治理元数据}
+  motivation: {name: 动机层,   purpose: BMM——愿景/使命/目标/指标/策略/政策/规则/风险}
+  domain:     {name: 领域层,   purpose: DDD——子域/限界上下文/通用语言/聚合/上下文映射}
+  agent:      {name: 智能体层, purpose: AgentOps——智能体/技能/工具/护栏/评测/上下文}
+  asset:      {name: 资产层,   purpose: 存量系统/数据/接口/组织——被改造与被包装的对象}
+
+# ---------------------------------------------------------------------------
+# 通用枚举
+# ---------------------------------------------------------------------------
+enums:
+  status:      [draft, proposed, reviewed, approved, deprecated]
+  origin:      [human, agent, import]
+  autonomy:    [L0, L1, L2, L3, L4]   # L0纯人工 L1建议 L2审批后执行 L3监督执行 L4全自主
+  severity:    [low, medium, high]
+  ctx_pattern: [partnership, shared_kernel, customer_supplier, conformist,
+                acl, ohs, published_language, separate_ways, big_ball_of_mud]
+
+# ---------------------------------------------------------------------------
+# 类型目录：kind → 所属层 / 必填属性 / 属性说明 / 抽取线索(clues 供抽取智能体)
+# 所有类型隐式继承 Element 基座属性：id, name, kind, description?, aliases?,
+#   status(draft), provenance{origin, agent?, confidence?}, evidence[](Evidence id 列表)
+# ---------------------------------------------------------------------------
+types:
+
+  # ---- kernel 内核层 ----
+  Evidence:
+    layer: kernel
+    desc: 证据——模型元素到知识库文档片段的溯源链接
+    attrs:
+      doc_title: {req: true,  desc: 来源文档标题}
+      doc_type:  {req: true, enum: [business, technical, regulatory, meeting, code]}
+      fragment:  {req: true,  desc: 原文片段（摘录，非转述）}
+      location:  {req: false, desc: 章节/页码/URL}
+    clues: [文档, 白皮书, 需求说明书, 接口文档, 会议纪要]
+
+  # ---- motivation 动机层（BMM 对齐）----
+  Vision:
+    layer: motivation
+    desc: 愿景——组织未来期望成为的样子（BMM End）
+    attrs:
+      statement: {req: true}
+    clues: [愿景, 致力于成为, vision]
+  Mission:
+    layer: motivation
+    desc: 使命——使愿景可操作的持续性经营活动（BMM Mean）
+    attrs:
+      statement: {req: true}
+    clues: [使命, 职责是, mission]
+  Goal:
+    layer: motivation
+    desc: 目标——定性的长期期望结果（BMM Desired Result）
+    attrs:
+      statement: {req: true}
+    clues: [目标, 旨在, goal]
+  Objective:
+    layer: motivation
+    desc: 指标/具体目标——可度量、有时限的结果台阶（BMM Objective ≈ KPI）
+    attrs:
+      statement: {req: true}
+      metric:    {req: true, desc: "{name, unit, target, baseline?, deadline?}"}
+    clues: [KPI, 指标, 达成率, 目标值, 提升至, 降低至]
+  Strategy:
+    layer: motivation
+    desc: 战略——通向目标的行动方针（BMM Course of Action）
+    attrs:
+      statement: {req: true}
+    clues: [战略, 策略, 方针, strategy]
+  Tactic:
+    layer: motivation
+    desc: 战术——落实战略的具体短期行动（BMM Course of Action）
+    attrs:
+      statement: {req: true}
+    clues: [举措, 战术, 落地动作]
+
+  BusinessPolicy:
+    layer: motivation
+    desc: 业务政策——不可直接执行、用于指导行动方针的指令（BMM Directive）
+    attrs:
+      statement: {req: true}
+    clues: [政策, 原则上, 必须保留, 不得]
+  BusinessRule:
+    layer: motivation
+    desc: 业务规则——可操作、可强制执行的指令（BMM Element of Guidance）
+    attrs:
+      statement:   {req: true}
+      enforcement: {req: true, enum: [code, guardrail, manual, hybrid],
+                    desc: code=落在领域模型代码; guardrail=智能体护栏; manual=人工; hybrid=组合}
+    clues: [规则, 不得超过, 必须审批, 校验, 阈值]
+  Influencer:
+    layer: motivation
+    desc: 影响因子——影响企业动机实现的内外部因素（BMM Influencer）
+    attrs:
+      kind: {req: true, enum: [internal, external]}
+    clues: [影响因素, 监管要求, 市场变化, 制约]
+  Assessment:
+    layer: motivation
+    desc: 评估——对影响因子的判断（如 SWOT）
+    attrs:
+      technique: {req: false, enum: [swot, other]}
+      finding:   {req: true}
+    clues: [评估, SWOT, 优势, 劣势, 机会, 威胁]
+  Risk:
+    layer: motivation
+    desc: 风险——对目标/指标的潜在负面影响（BMM Potential Impact）
+    attrs:
+      severity:   {req: true, enum: [low, medium, high]}
+      likelihood: {req: true, enum: [low, medium, high]}
+    clues: [风险, 可能导致, 隐患]
+
+  # ---- domain 领域层（DDD 对齐）----
+  Domain:
+    layer: domain
+    desc: 子域——业务能力的领域分区
+    attrs:
+      kind: {req: true, enum: [core, supporting, generic]}
+    clues: [核心域, 支撑域, 通用域, 业务域]
+  BusinessCapability:
+    layer: domain
+    desc: 业务能力——组织"做什么"的稳定能力（桥接 BMM 战略与 DDD 上下文）
+    attrs:
+      level: {req: false, desc: 能力层级 1-3}
+    clues: [能力, 能力地图, capability]
+  BoundedContext:
+    layer: domain
+    desc: 限界上下文——模型与通用语言的一致性边界（智能体归属的单位）
+    attrs: {}
+    clues: [上下文, 边界, 模块, bounded context]
+  GlossaryTerm:
+    layer: domain
+    desc: 通用语言词条——上下文内有精确定义的术语
+    attrs:
+      term:       {req: true}
+      definition: {req: true}
+    clues: [术语, 定义, 是指, 名词解释]
+  Aggregate:
+    layer: domain
+    desc: 聚合（根）——一致性/事务边界，业务不变量的代码化载体
+    attrs:
+      invariants: {req: false, desc: 不变量列表}
+    clues: [工单, 订单, 账户, 不变量, 必须保证]
+  Entity:
+    layer: domain
+    desc: 实体——有身份标识的领域对象
+    attrs:
+      identity: {req: false, desc: 标识字段}
+    clues: [实体, 编号, 唯一标识]
+  ValueObject:
+    layer: domain
+    desc: 值对象——以属性值判等的不可变对象
+    attrs:
+      attributes: {req: false}
+    clues: [金额, 地址, 值对象]
+  DomainService:
+    layer: domain
+    desc: 领域服务——不天然属于任一实体的领域操作（无状态）
+    attrs: {}
+    clues: [领域服务, 计算, 定责]
+  DomainEvent:
+    layer: domain
+    desc: 领域事件——领域中已发生且被关心的事实
+    attrs:
+      payload: {req: false}
+    clues: [事件, 已创建, 已升级, 已赔付]
+  ApplicationService:
+    layer: domain
+    desc: 应用服务——编排用例、对外的确定性操作入口（Tool 的后端）
+    attrs:
+      operations: {req: false}
+
+  # ---- agent 智能体层（AgentOps）----
+  Agent:
+    layer: agent
+    desc: 智能体——章程=使命+边界+自主级别+升级规则（一个智能体归属一个限界上下文）
+    attrs:
+      autonomy: {req: true, enum: [L0, L1, L2, L3, L4]}
+      charter:  {req: false, desc: "{scope_in: [], scope_out: []}"}
+    clues: [智能体, 助手, 专员, agent, 机器人]
+  Skill:
+    layer: agent
+    desc: 技能——程序性知识(指令)+工具+资源的可组合能力包
+    attrs:
+      instructions: {req: true, desc: 操作指令/SOP（程序性知识）}
+    clues: [技能, 流程, SOP, 操作手册, skill]
+  Tool:
+    layer: agent
+    desc: 工具契约——智能体可调用的确定性操作（Schema+语义+副作用声明）
+    attrs:
+      semantics:    {req: true, desc: 给 LLM 看的自然语言语义描述（须用通用语言）}
+      side_effects: {req: true, enum: [none, read, write, external]}
+      idempotent:   {req: true, desc: 布尔——是否幂等}
+      permissions:  {req: false, desc: 所需权限范围列表}
+    clues: [接口, 查询, 创建, 回调, API, 工具]
+  MCPServer:
+    layer: agent
+    desc: MCP 服务——把系统/上下文能力以工具形式暴露（≈ DDD 的 ACL/开放主机服务）
+    attrs:
+      pattern: {req: true, enum: [acl, ohs, published_language, hybrid]}
+    clues: [MCP, 服务封装, 适配层, 防腐层]
+  ContextDesign:
+    layer: agent
+    desc: 上下文工程设计——知识源、检索策略、上下文预算、记忆配置
+    attrs:
+      retrieval_strategy:    {req: false}
+      context_budget_tokens: {req: false}
+    clues: [知识库, 检索, RAG, 上下文]
+  Memory:
+    layer: agent
+    desc: 记忆——分层记忆设计
+    attrs:
+      tier:      {req: true, enum: [working, episodic, semantic]}
+      store:     {req: false}
+      retention: {req: false}
+    clues: [记忆, 历史, 会话, 经验]
+  Eval:
+    layer: agent
+    desc: 评测——智能体行为的可执行规约（spec-by-example），回归门禁
+    attrs:
+      kind:          {req: true, enum: [golden_case, rubric, trajectory, regression]}
+      pass_criteria: {req: true, desc: 通过标准（含阈值）}
+    clues: [评测, 测试集, 验收标准, 准确率]
+  Guardrail:
+    layer: agent
+    desc: 护栏——业务规则/政策的可执行化屏障
+    attrs:
+      kind:   {req: true, enum: [input_filter, output_filter, validator, hitl, rate_limit]}
+      action: {req: true, enum: [block, review, redact, escalate]}
+    clues: [护栏, 拦截, 审批, 脱敏, 风控]
+  ObservabilityProfile:
+    layer: agent
+    desc: 可观测配置——trace、成本、质量指标
+    attrs:
+      metrics: {req: false}
+    clues: [监控, 追踪, 成本, token]
+
+  # ---- asset 资产层 ----
+  System:
+    layer: asset
+    desc: 系统——存量/外采/新建的应用系统（被改造或被 MCP 包装的对象）
+    attrs:
+      kind:        {req: true, enum: [legacy, saas, new]}
+      criticality: {req: false, enum: [low, medium, high]}
+    clues: [系统, 平台, 中台, ERP, OMS, CRM]
+  DataStore:
+    layer: asset
+    desc: 数据存储——存量库表/数据实体（逆向建模的输入）
+    attrs: {}
+    clues: [数据库, 表, 数据实体]
+  Interface:
+    layer: asset
+    desc: 既有接口——存量系统对外 API
+    attrs:
+      protocol: {req: false}
+      spec_ref: {req: false}
+    clues: [接口, API, HTTP, RPC]
+  OrganizationUnit:
+    layer: asset
+    desc: 组织单元——业务/IT 归属方，元素 owner
+    attrs: {}
+    clues: [部门, 团队, 事业部]
+
+    clues: [应用服务, 用例, 编排]
+
+
+# ---------------------------------------------------------------------------
+# 关系目录：type → {from: [源类型], to: [目标类型], card: 每个源实例应有的数量}
+# card 取值: "1"(恰好1,error) / "1..*"(≥1,error) / "0..1"(≤1) / "0..*"(不检查)
+# ---------------------------------------------------------------------------
+relations:
+  # 动机层内部（BMM 标准关系）
+  makesOperative:        {from: [Mission], to: [Vision], card: "0..1"}
+  measures:              {from: [Objective], to: [Goal], card: "1..*"}          # R1
+  channelsEffortsToward: {from: [Strategy], to: [Goal], card: "0..*"}
+  implements:            {from: [Tactic], to: [Strategy], card: "0..1"}
+  governs:               {from: [BusinessPolicy], to: [Strategy, Tactic, Agent], card: "0..*"}
+  derivesFrom:           {from: [BusinessRule], to: [BusinessPolicy], card: "0..*"}
+  enforcedBy:            {from: [BusinessRule], to: [Guardrail, ApplicationService], card: "0..*"}  # R4(warn)
+  assesses:              {from: [Assessment], to: [Influencer], card: "0..*"}
+  threatens:             {from: [Risk], to: [Goal, Objective], card: "0..*"}
+  # 桥接层：动机 ↔ 领域
+  enables:               {from: [BusinessCapability], to: [Strategy], card: "0..*"}
+  realizes:              {from: [BoundedContext, Skill], to: [BusinessCapability], card: "0..*"}    # R7: Skill 须 ≥1
+  within:                {from: [BoundedContext], to: [Domain], card: "0..1"}
+  # 领域层内部（DDD）
+  contains:              {from: [BoundedContext],
+                          to: [Aggregate, Entity, ValueObject, DomainService, DomainEvent,
+                               ApplicationService, GlossaryTerm],
+                          card: "0..*"}
+  partOf:                {from: [Entity, ValueObject], to: [Aggregate], card: "0..1"}
+  raises:                {from: [Aggregate, DomainService], to: [DomainEvent], card: "0..*"}
+  contextRelationship:   {from: [BoundedContext], to: [BoundedContext], card: "0..*",
+                          attrs: {pattern: {req: true, enum: ctx_pattern}}}      # R9
+  # 智能体层（AgentOps）
+  hasMission:            {from: [Agent], to: [Mission], card: "1"}               # R2
+  hasObjective:          {from: [Agent], to: [Objective], card: "0..*"}
+  belongsTo:             {from: [Agent], to: [BoundedContext], card: "1"}        # R2
+  escalatesVia:          {from: [Agent], to: [BusinessPolicy], card: "0..*"}
+  ownsSkill:             {from: [Agent], to: [Skill], card: "0..*"}
+  invokes:               {from: [Skill], to: [Tool], card: "0..*"}
+  backedBy:              {from: [Tool], to: [ApplicationService, DomainService, System], card: "0..1"}
+  wraps:                 {from: [MCPServer], to: [System, BoundedContext], card: "1"}
+  exposes:               {from: [MCPServer], to: [Tool], card: "0..*"}
+  hasContextDesign:      {from: [Agent], to: [ContextDesign], card: "0..1"}
+  usesMemory:            {from: [Agent, Skill], to: [Memory], card: "0..*"}
+  validates:             {from: [Eval], to: [Agent, Skill], card: "0..*"}
+  specifies:             {from: [Eval], to: [BusinessRule], card: "0..*"}
+  enforces:              {from: [Guardrail], to: [BusinessRule, BusinessPolicy], card: "0..*"}
+  protects:              {from: [Guardrail], to: [Agent, Skill], card: "0..*"}
+  ownedBy:               {from: [System, BoundedContext], to: [OrganizationUnit], card: "0..1"}
+
+# ---------------------------------------------------------------------------
+# 约束规则（校验器执行；R1/R2/R3/R9 由结构校验覆盖，R4-R8/R10 为独立规则实现）
+# ---------------------------------------------------------------------------
+rules:
+  - {id: R1,  level: error, desc: "Objective 必须 measures ≥1 个 Goal（measures.card=1..*）"}
+  - {id: R2,  level: error, desc: "Agent 恰有 1 个 hasMission 与 1 个 belongsTo（card=1）"}
+  - {id: R3,  level: error, desc: "Tool 必填 side_effects 与 idempotent（attrs.req）"}
+  - {id: R4,  level: warn,  desc: "未废弃 BusinessRule 应有 ≥1 执行点（enforcedBy）"}
+  - {id: R5,  level: error, desc: "Agent.autonomy≥L2 ⇒ ≥1 个 kind=hitl 的 Guardrail protects 它，且 ≥1 个 Eval validates 它"}
+  - {id: R6,  level: warn,  desc: "每个元素（除 Evidence）应有 ≥1 条证据链接"}
+  - {id: R7,  level: error, desc: "Skill 必须 realizes ≥1 个 BusinessCapability"}
+  - {id: R8,  level: warn,  desc: "同一 BoundedContext 内 GlossaryTerm.term 应唯一"}
+  - {id: R9,  level: error, desc: "contextRelationship.pattern 必填且为合法枚举（结构校验执行）"}
+  - {id: R10, level: warn,  desc: "Mission 应 makesOperative ≥1 个 Vision"}
