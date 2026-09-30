@@ -1,0 +1,335 @@
+# =============================================================================
+# PoC 候选模型：智家商城·售后域（抽取自两份模拟语料，Extractor v1 契约）
+# 语料：poc/corpus/智家商城售后服务业务白皮书.md（业务）
+#       poc/corpus/售后中台系统现状与接口说明.md（技术）
+# 说明：本文件由 LLM 按 agents/extractor.prompt.md 两遍法手工模拟执行产出，
+#       用于验证本体覆盖度；全部元素 status=draft，证据为原文摘录。
+# =============================================================================
+model: {name: 智家售后域候选模型, udom: "0.1.1", status: draft}
+
+elements:
+  # ---- 证据（白皮书 ev-01~09 / 接口说明 ev-10~14）----
+  - {id: ev-01, kind: Evidence, name: 白皮书-愿景使命,
+     attrs: {kb: kb-aftersales, doc_title: 智家商城售后服务业务白皮书, doc_type: business, location: "§1",
+             fragment: "我们的愿景是成为家电零售行业的售后服务标杆。售后团队的使命是：让每一次售后都简单、透明、可预期。"}}
+  - {id: ev-02, kind: Evidence, name: 白皮书-指标表,
+     attrs: {kb: kb-aftersales, doc_title: 智家商城售后服务业务白皮书, doc_type: business, location: "§2",
+             fragment: "售后满意度 4.5→≥4.8（2026-Q3）；平均售后处理时长 52h→≤24h（2026-Q2）；一次解决率 71%→≥85%（2026-Q3）"}}
+  - {id: ev-03, kind: Evidence, name: 白皮书-策略举措,
+     attrs: {kb: kb-aftersales, doc_title: 智家商城售后服务业务白皮书, doc_type: business, location: "§3",
+             fragment: "策略S1：售后全流程数字化与智能分流。举措：引入智能客服完成初判与分流；退款执行自动化；与物流商系统直连。"}}
+  - {id: ev-04, kind: Evidence, name: 白皮书-政策规则,
+     attrs: {kb: kb-aftersales, doc_title: 智家商城售后服务业务白皮书, doc_type: business, location: "§4",
+             fragment: "政策P1：涉及资金退款的售后处置，必须保留人工复核通道。R1：七天无理由退货须未拆封且配件齐全；R2：单笔退款超2000元须售后主管审批。"}}
+  - {id: ev-05, kind: Evidence, name: 白皮书-判定矩阵,
+     attrs: {kb: kb-aftersales, doc_title: 智家商城售后服务业务白皮书, doc_type: business, location: "§4-R4",
+             fragment: "R3：大家电安装完成后不支持七天无理由退货；R4：退换货判定按商品类型×使用情形矩阵执行。"}}
+  - {id: ev-06, kind: Evidence, name: 白皮书-术语,
+     attrs: {kb: kb-aftersales, doc_title: 智家商城售后服务业务白皮书, doc_type: business, location: "§5",
+             fragment: "售后单：客户就一笔订单提出的退货、换货、维修诉求所形成的业务单据，是售后业务的核心载体。"}}
+  - {id: ev-07, kind: Evidence, name: 白皮书-流程,
+     attrs: {kb: kb-aftersales, doc_title: 智家商城售后服务业务白皮书, doc_type: business, location: "§6",
+             fragment: "流程：客户提交申请→初审（现人工）→主管审核→取件或寄修→验收→退款或换货→关单回访。"}}
+  - {id: ev-08, kind: Evidence, name: 白皮书-组织,
+     attrs: {kb: kb-aftersales, doc_title: 智家商城售后服务业务白皮书, doc_type: business, location: "§7",
+             fragment: "售后服务部：售后业务归口部门，下辖审核组与物流协同组。"}}
+  - {id: ev-09, kind: Evidence, name: 白皮书-风险,
+     attrs: {kb: kb-aftersales, doc_title: 智家商城售后服务业务白皮书, doc_type: business, location: "§8",
+             fragment: "大促期间售后单量可达日常3-5倍，初审环节易积压，可能导致处理时长指标恶化。"}}
+  - {id: ev-10, kind: Evidence, name: 接口说明-系统清单,
+     attrs: {kb: kb-aftersales-sys, doc_title: 售后中台系统现状与接口说明, doc_type: technical, location: "§1",
+             fragment: "ASS售后系统（自研遗留2015年Java单体）；OMS订单系统；WMS仓储系统；支付网关（外采SaaS）。"}}
+  - {id: ev-11, kind: Evidence, name: 接口说明-接口表,
+     attrs: {kb: kb-aftersales-sys, doc_title: 售后中台系统现状与接口说明, doc_type: technical, location: "§2",
+             fragment: "createAfterSaleOrder(POST,非幂等)；queryAfterSaleStatus(GET,幂等)；approveRefund(POST,幂等)；executeRefund(POST,需幂等键)；arrangePickup(POST,非幂等)。"}}
+  - {id: ev-12, kind: Evidence, name: 接口说明-数据表,
+     attrs: {kb: kb-aftersales-sys, doc_title: 售后中台系统现状与接口说明, doc_type: technical, location: "§3",
+             fragment: "as_order（售后单主表）：单号、订单号、类型（退/换/修）、状态、金额；refund_record（退款记录）：金额、审批人、幂等键。"}}
+  - {id: ev-13, kind: Evidence, name: 接口说明-痛点,
+     attrs: {kb: kb-aftersales-sys, doc_title: 售后中台系统现状与接口说明, doc_type: technical, location: "§4",
+             fragment: "初审全靠人工平均每单4小时；createAfterSaleOrder不幂等，重复点击产生重复售后单需人工合并；审批通过后人工再操作退款平均延迟6小时。"}}
+  - {id: ev-14, kind: Evidence, name: 接口说明-运行数据,
+     attrs: {kb: kb-aftersales-sys, doc_title: 售后中台系统现状与接口说明, doc_type: technical, location: "§5",
+             fragment: "日常售后单量约1200单/天；大促峰值5000+单/天。"}}
+
+  # ---- 动机层（BMM）----
+  - {id: vision-01, kind: Vision, name: 售后服务愿景, ns: aftersales,
+     attrs: {statement: 成为家电零售行业的售后服务标杆},
+     evidence: [ev-01], provenance: {origin: agent, agent: extractor-v1, confidence: 0.98}}
+  - {id: mission-01, kind: Mission, name: 售后使命, ns: aftersales,
+     attrs: {statement: 让每一次售后都简单、透明、可预期},
+     evidence: [ev-01], provenance: {origin: agent, agent: extractor-v1, confidence: 0.98}}
+  - {id: goal-01, kind: Goal, name: 售后体验与效率目标, ns: aftersales,
+     attrs: {statement: 持续提升售后服务体验与运营效率},
+     evidence: [ev-02], provenance: {origin: agent, agent: extractor-v1, confidence: 0.9}}
+  - {id: obj-01, kind: Objective, name: 售后满意度, ns: aftersales,
+     attrs: {statement: 售后满意度达到4.8分,
+             metric: {name: 售后满意度, unit: 分, target: 4.8, baseline: 4.5, deadline: 2026-Q3}},
+     evidence: [ev-02], provenance: {origin: agent, agent: extractor-v1, confidence: 0.97}}
+  - {id: obj-02, kind: Objective, name: 售后处理时长, ns: aftersales,
+     attrs: {statement: 平均售后处理时长降至24小时,
+             metric: {name: 平均售后处理时长, unit: 小时, target: 24, baseline: 52, deadline: 2026-Q2}},
+     evidence: [ev-02], provenance: {origin: agent, agent: extractor-v1, confidence: 0.97}}
+  - {id: obj-03, kind: Objective, name: 一次解决率, ns: aftersales,
+     attrs: {statement: 一次解决率达到85%,
+             metric: {name: 一次解决率, unit: "%", target: 85, baseline: 71, deadline: 2026-Q3}},
+     evidence: [ev-02], provenance: {origin: agent, agent: extractor-v1, confidence: 0.97}}
+  - {id: strat-01, kind: Strategy, name: 全流程数字化与智能分流, ns: aftersales,
+     attrs: {statement: 用自动化与智能化手段压缩人工环节，让人工只处理真正需要判断的复杂单},
+     evidence: [ev-03], provenance: {origin: agent, agent: extractor-v1, confidence: 0.93}}
+  - {id: tactic-01, kind: Tactic, name: 智能客服初判分流, ns: aftersales,
+     attrs: {statement: 引入智能客服完成售后初判与分流，替代人工初审},
+     evidence: [ev-03], provenance: {origin: agent, agent: extractor-v1, confidence: 0.95}}
+  - {id: tactic-02, kind: Tactic, name: 退款执行自动化, ns: aftersales,
+     attrs: {statement: 符合条件的退款无需人工触发，自动执行},
+     evidence: [ev-03], provenance: {origin: agent, agent: extractor-v1, confidence: 0.95}}
+  - {id: tactic-03, kind: Tactic, name: 寄修物流直连, ns: aftersales,
+     attrs: {statement: 与物流商系统直连，实现寄修取件自动下单},
+     evidence: [ev-03], provenance: {origin: agent, agent: extractor-v1, confidence: 0.92}}
+  - {id: pol-01, kind: BusinessPolicy, name: 资金处置人工复核政策, ns: aftersales,
+     attrs: {statement: 涉及资金退款的售后处置，必须保留人工复核通道},
+     evidence: [ev-04], provenance: {origin: agent, agent: extractor-v1, confidence: 0.98}}
+  - {id: rule-01, kind: BusinessRule, name: 七天无理由受理规则, ns: aftersales,
+     attrs: {statement: 七天无理由退货，商品须未拆封且配件齐全，否则不予受理, enforcement: hybrid},
+     evidence: [ev-04], provenance: {origin: agent, agent: extractor-v1, confidence: 0.96}}
+  - {id: rule-02, kind: BusinessRule, name: 退款审批金额规则, ns: aftersales,
+     attrs: {statement: 单笔退款金额超过2000元的，必须经售后主管审批后方可执行, enforcement: hybrid},
+     evidence: [ev-04], provenance: {origin: agent, agent: extractor-v1, confidence: 0.98}}
+  - {id: rule-03, kind: BusinessRule, name: 大家电无理由退货限制, ns: aftersales,
+     attrs: {statement: 大家电（冰箱、洗衣机、空调）安装完成后，不支持七天无理由退货, enforcement: code},
+     evidence: [ev-05], provenance: {origin: agent, agent: extractor-v1, confidence: 0.96}}
+  - {id: rule-04, kind: BusinessRule, name: 退换货判定矩阵, ns: aftersales,
+     description: "【推断】矩阵全文见 ev-05；结构化决策表支持建议纳入 v0.2（v0.1.1 无 decision_table 属性）",
+     attrs: {statement: 退换货受理按商品类型×使用情形判定矩阵执行, enforcement: code},
+     evidence: [ev-05], provenance: {origin: agent, agent: extractor-v1, confidence: 0.72}}
+  - {id: risk-01, kind: Risk, name: 大促初审积压风险, ns: aftersales,
+     attrs: {severity: high, likelihood: high},
+     description: 大促单量达日常3-5倍，初审积压导致处理时长恶化,
+     evidence: [ev-09, ev-14], provenance: {origin: agent, agent: extractor-v1, confidence: 0.9}}
+
+
+  # ---- 领域层（DDD）----
+  - {id: dom-01, kind: Domain, name: 售后域, ns: aftersales, attrs: {kind: core},
+     evidence: [ev-01, ev-10], provenance: {origin: agent, agent: extractor-v1, confidence: 0.88}}
+  - {id: cap-01, kind: BusinessCapability, name: 售后受理与审核能力, ns: aftersales,
+     attrs: {level: 2},
+     evidence: [ev-03, ev-06], provenance: {origin: agent, agent: extractor-v1, confidence: 0.8}}
+  - {id: cap-02, kind: BusinessCapability, name: 退款处理能力, ns: aftersales,
+     attrs: {level: 2},
+     evidence: [ev-03, ev-11], provenance: {origin: agent, agent: extractor-v1, confidence: 0.78}}
+  - {id: bc-01, kind: BoundedContext, name: 售后处理上下文, ns: aftersales,
+     description: 售后单、受理审核、寄修验收的一致性边界,
+     evidence: [ev-06, ev-10], provenance: {origin: agent, agent: extractor-v1, confidence: 0.82}}
+  - {id: bc-02, kind: BoundedContext, name: 退款上下文, ns: aftersales,
+     description: 退款审批与执行的一致性边界,
+     evidence: [ev-11, ev-12], provenance: {origin: agent, agent: extractor-v1, confidence: 0.75}}
+  - {id: term-01, kind: GlossaryTerm, name: 售后单, ns: aftersales,
+     attrs: {term: 售后单,
+             definition: 客户就一笔订单提出的退货、换货、维修诉求所形成的业务单据，是售后业务的核心载体},
+     evidence: [ev-06], provenance: {origin: agent, agent: extractor-v1, confidence: 0.99}}
+  - {id: term-02, kind: GlossaryTerm, name: 一次解决率, ns: aftersales,
+     attrs: {term: 一次解决率,
+             definition: 客户首次提出售后诉求后无需二次联系即完成处理的售后单占比},
+     evidence: [ev-06], provenance: {origin: agent, agent: extractor-v1, confidence: 0.99}}
+  - {id: term-03, kind: GlossaryTerm, name: 寄修, ns: aftersales,
+     attrs: {term: 寄修, definition: 客户将故障商品寄回指定维修点进行维修的服务方式},
+     evidence: [ev-06], provenance: {origin: agent, agent: extractor-v1, confidence: 0.99}}
+  - {id: term-04, kind: GlossaryTerm, name: 七天无理由, ns: aftersales,
+     attrs: {term: 七天无理由,
+             definition: 消费者在签收商品七日内，无需说明理由即可退货的权益（法定）},
+     evidence: [ev-06], provenance: {origin: agent, agent: extractor-v1, confidence: 0.99}}
+  - {id: agg-01, kind: Aggregate, name: 售后单聚合, ns: aftersales,
+     description: "【推断】不变量依据痛点3（重复单需人工合并）反推",
+     attrs: {invariants: ["同一订单同一类型仅允许一个进行中的售后单"]},
+     evidence: [ev-06, ev-13], provenance: {origin: agent, agent: extractor-v1, confidence: 0.62}}
+  - {id: ent-01, kind: Entity, name: 售后商品明细, ns: aftersales,
+     attrs: {identity: 售后单号+商品行号},
+     evidence: [ev-12], provenance: {origin: agent, agent: extractor-v1, confidence: 0.85}}
+  - {id: evt-01, kind: DomainEvent, name: 售后已关单, ns: aftersales,
+     attrs: {payload: [case_id, closed_at, result]},
+     evidence: [ev-07], provenance: {origin: agent, agent: extractor-v1, confidence: 0.7}}
+  - {id: svc-01, kind: ApplicationService, name: 售后单应用服务, ns: aftersales,
+     attrs: {operations: [createAfterSaleOrder, queryAfterSaleStatus, closeOrder]},
+     evidence: [ev-11], provenance: {origin: agent, agent: extractor-v1, confidence: 0.9}}
+  - {id: svc-02, kind: ApplicationService, name: 退款服务, ns: aftersales,
+     attrs: {operations: [approveRefund, executeRefund]},
+     evidence: [ev-11], provenance: {origin: agent, agent: extractor-v1, confidence: 0.9}}
+  - {id: proc-01, kind: BusinessProcess, name: 售后处理流程, ns: aftersales,
+     attrs: {steps: ["客户提交申请(APP/热线)", "初审(当前人工)", "主管审核(涉及资金时)",
+                     "取件/寄修(物流协同组)", "验收商品状态", "执行退款或发出换货", "关单并回访"]},
+     evidence: [ev-07], provenance: {origin: agent, agent: extractor-v1, confidence: 0.95}}
+
+
+  # ---- 资产层 ----
+  - {id: sys-01, kind: System, name: ASS售后系统, ns: aftersales,
+     attrs: {kind: legacy, criticality: high}, description: 自研遗留（2015年Java单体），售后SoR,
+     evidence: [ev-10], provenance: {origin: agent, agent: extractor-v1, confidence: 0.97}}
+  - {id: sys-02, kind: System, name: OMS订单系统, ns: aftersales,
+     attrs: {kind: legacy, criticality: high}, description: "【推断】自研在运系统，kind 归类 legacy 待架构组确认",
+     evidence: [ev-10], provenance: {origin: agent, agent: extractor-v1, confidence: 0.6}}
+  - {id: sys-03, kind: System, name: WMS仓储系统, ns: aftersales,
+     attrs: {kind: legacy, criticality: medium}, description: "【推断】同 sys-02",
+     evidence: [ev-10], provenance: {origin: agent, agent: extractor-v1, confidence: 0.6}}
+  - {id: sys-04, kind: System, name: 支付网关, ns: aftersales,
+     attrs: {kind: saas, criticality: high},
+     evidence: [ev-10], provenance: {origin: agent, agent: extractor-v1, confidence: 0.95}}
+  - {id: org-01, kind: OrganizationUnit, name: 售后服务部, ns: aftersales,
+     evidence: [ev-08], provenance: {origin: agent, agent: extractor-v1, confidence: 0.98}}
+  - {id: org-02, kind: OrganizationUnit, name: 审核组, ns: aftersales,
+     evidence: [ev-08], provenance: {origin: agent, agent: extractor-v1, confidence: 0.98}}
+  - {id: org-03, kind: OrganizationUnit, name: 物流协同组, ns: aftersales,
+     evidence: [ev-08], provenance: {origin: agent, agent: extractor-v1, confidence: 0.98}}
+  - {id: ds-01, kind: DataStore, name: as_order售后单主表, ns: aftersales,
+     evidence: [ev-12], provenance: {origin: agent, agent: extractor-v1, confidence: 0.95}}
+  - {id: ds-02, kind: DataStore, name: refund_record退款记录表, ns: aftersales,
+     evidence: [ev-12], provenance: {origin: agent, agent: extractor-v1, confidence: 0.95}}
+  - {id: if-01, kind: Interface, name: createAfterSaleOrder接口, ns: aftersales,
+     attrs: {protocol: HTTP}, description: "POST /as/orders；非幂等——重复提交产生重复单（痛点3）",
+     evidence: [ev-11, ev-13], provenance: {origin: agent, agent: extractor-v1, confidence: 0.95}}
+  - {id: if-02, kind: Interface, name: queryAfterSaleStatus接口, ns: aftersales,
+     attrs: {protocol: HTTP}, description: "GET /as/orders/{id}；幂等",
+     evidence: [ev-11], provenance: {origin: agent, agent: extractor-v1, confidence: 0.95}}
+  - {id: if-03, kind: Interface, name: approveRefund接口, ns: aftersales,
+     attrs: {protocol: HTTP}, description: "POST /as/refunds/{id}/approve；幂等；人工操作入口",
+     evidence: [ev-11], provenance: {origin: agent, agent: extractor-v1, confidence: 0.95}}
+  - {id: if-04, kind: Interface, name: executeRefund接口, ns: aftersales,
+     attrs: {protocol: HTTP}, description: POST /pay/refunds；需幂等键 idempotency_key,
+     evidence: [ev-11], provenance: {origin: agent, agent: extractor-v1, confidence: 0.95}}
+  - {id: if-05, kind: Interface, name: arrangePickup接口, ns: aftersales,
+     attrs: {protocol: HTTP}, description: POST /wms/pickups；非幂等,
+     evidence: [ev-11], provenance: {origin: agent, agent: extractor-v1, confidence: 0.95}}
+
+  # ---- 智能体层（AgentOps）----
+  - {id: agent-01, kind: Agent, name: 售后智能初审助手, ns: aftersales,
+     attrs: {autonomy: L1, charter: {scope_in: [受理判定建议, 售后单分流, 判定依据说明],
+                                     scope_out: [退款审批, 客户沟通, 拒收申诉处理]}},
+     description: 依据 tactic-01；政策P1下初审只做建议与分流，人工确认,
+     evidence: [ev-03, ev-04], provenance: {origin: agent, agent: extractor-v1, confidence: 0.85}}
+  - {id: agent-02, kind: Agent, name: 退款执行助手, ns: aftersales,
+     attrs: {autonomy: L3, charter: {scope_in: [小额退款自动执行, 执行结果回写],
+                                     scope_out: [超2000元退款(须主管审批), 异常退款处置]}},
+     description: 依据 tactic-02 + rule-02；2000元以下自动执行，以上强制人工审批,
+     evidence: [ev-03, ev-04], provenance: {origin: agent, agent: extractor-v1, confidence: 0.8}}
+  - {id: skill-01, kind: Skill, name: 售后受理初判与分流, ns: aftersales,
+     attrs: {instructions: "1)读取申请与订单快照 2)按受理规则(拆封状态/商品类型/安装状态)判定 3)按判定矩阵给出受理建议 4)复杂单转人工审核组"},
+     evidence: [ev-03, ev-05, ev-07], provenance: {origin: agent, agent: extractor-v1, confidence: 0.82}}
+  - {id: skill-02, kind: Skill, name: 退款自动执行, ns: aftersales,
+     attrs: {instructions: "1)读取审批通过的退款单 2)校验金额与规则 3)调支付网关执行(幂等键) 4)回写状态；超2000元自动转主管审批台"},
+     evidence: [ev-03, ev-11], provenance: {origin: agent, agent: extractor-v1, confidence: 0.82}}
+  - {id: tool-01, kind: Tool, name: queryAfterSaleStatus, ns: aftersales,
+     attrs: {semantics: 查询售后单状态与流转记录, side_effects: read, idempotent: true},
+     evidence: [ev-11], provenance: {origin: agent, agent: extractor-v1, confidence: 0.96}}
+  - {id: tool-02, kind: Tool, name: executeRefund, ns: aftersales,
+     attrs: {semantics: 通过支付网关执行退款（需幂等键）, side_effects: write, idempotent: true,
+             permissions: [refund:execute]},
+     evidence: [ev-11], provenance: {origin: agent, agent: extractor-v1, confidence: 0.96}}
+  - {id: tool-03, kind: Tool, name: createAfterSaleOrder, ns: aftersales,
+     attrs: {semantics: 创建售后单, side_effects: write, idempotent: false,
+             permissions: [as:create]},
+     description: "【风险】后端接口非幂等，智能体调用须先查重（见 if-01/痛点3）",
+     evidence: [ev-11, ev-13], provenance: {origin: agent, agent: extractor-v1, confidence: 0.93}}
+  - {id: tool-04, kind: Tool, name: arrangePickup, ns: aftersales,
+     attrs: {semantics: 安排上门取件, side_effects: external, idempotent: false,
+             permissions: [pickup:arrange]},
+     evidence: [ev-11], provenance: {origin: agent, agent: extractor-v1, confidence: 0.9}}
+  - {id: mcp-01, kind: MCPServer, name: ASS-MCP, ns: aftersales,
+     attrs: {pattern: acl}, description: 包装遗留ASS单体，屏蔽其内部模型，向智能体暴露干净工具,
+     evidence: [ev-10, ev-11], provenance: {origin: agent, agent: extractor-v1, confidence: 0.88}}
+  - {id: mcp-02, kind: MCPServer, name: 支付网关-MCP, ns: aftersales,
+     attrs: {pattern: ohs}, description: 支付网关的标准化工具暴露,
+     evidence: [ev-10, ev-11], provenance: {origin: agent, agent: extractor-v1, confidence: 0.85}}
+  - {id: grd-01, kind: Guardrail, name: 退款金额校验器, ns: aftersales,
+     attrs: {kind: validator, action: block},
+     evidence: [ev-04], provenance: {origin: agent, agent: extractor-v1, confidence: 0.95}}
+  - {id: grd-02, kind: Guardrail, name: 主管审批台, ns: aftersales,
+     attrs: {kind: hitl, action: escalate},
+     evidence: [ev-04], provenance: {origin: agent, agent: extractor-v1, confidence: 0.95}}
+  - {id: eval-01, kind: Eval, name: 退款自动化回归评测集, ns: aftersales,
+     attrs: {kind: regression, pass_criteria: 超权限退款拦截率100%且正常退款执行成功率≥99.5%},
+     evidence: [ev-04], provenance: {origin: agent, agent: extractor-v1, confidence: 0.85}}
+
+relations:
+  # 动机层链条
+  - {type: makesOperative, source: mission-01, target: vision-01}
+  - {type: measures, source: obj-01, target: goal-01}
+  - {type: measures, source: obj-02, target: goal-01}
+  - {type: measures, source: obj-03, target: goal-01}
+  - {type: channelsEffortsToward, source: strat-01, target: goal-01}
+  - {type: implements, source: tactic-01, target: strat-01}
+  - {type: implements, source: tactic-02, target: strat-01}
+  - {type: implements, source: tactic-03, target: strat-01}
+  - {type: governs, source: pol-01, target: strat-01}
+  - {type: governs, source: pol-01, target: agent-02}
+  - {type: derivesFrom, source: rule-02, target: pol-01}
+  - {type: threatens, source: risk-01, target: obj-02}
+  # 桥接
+  - {type: enables, source: cap-01, target: strat-01}
+  - {type: enables, source: cap-02, target: strat-01}
+  - {type: realizes, source: bc-01, target: cap-01}
+  - {type: realizes, source: bc-02, target: cap-02}
+  - {type: realizes, source: skill-01, target: cap-01}
+  - {type: realizes, source: skill-02, target: cap-02}
+  - {type: realizes, source: proc-01, target: cap-01}
+  - {type: within, source: bc-01, target: dom-01}
+  - {type: within, source: bc-02, target: dom-01}
+  # 领域层结构
+  - {type: contains, source: bc-01, target: term-01}
+  - {type: contains, source: bc-01, target: term-02}
+  - {type: contains, source: bc-01, target: term-03}
+  - {type: contains, source: bc-01, target: term-04}
+  - {type: contains, source: bc-01, target: agg-01}
+  - {type: contains, source: bc-01, target: evt-01}
+  - {type: contains, source: bc-01, target: svc-01}
+  - {type: contains, source: bc-01, target: proc-01}
+  - {type: contains, source: bc-02, target: svc-02}
+  - {type: partOf, source: ent-01, target: agg-01}
+  - {type: raises, source: agg-01, target: evt-01}
+  - {type: contextRelationship, source: bc-02, target: bc-01, attrs: {pattern: customer_supplier}}
+  # 智能体装配
+  - {type: hasMission, source: agent-01, target: mission-01}
+  - {type: hasMission, source: agent-02, target: mission-01}
+  - {type: hasObjective, source: agent-01, target: obj-02}
+  - {type: hasObjective, source: agent-02, target: obj-02}
+  - {type: belongsTo, source: agent-01, target: bc-01}
+  - {type: belongsTo, source: agent-02, target: bc-02}
+  - {type: escalatesVia, source: agent-01, target: pol-01}
+  - {type: escalatesVia, source: agent-02, target: pol-01}
+  - {type: ownsSkill, source: agent-01, target: skill-01}
+  - {type: ownsSkill, source: agent-02, target: skill-02}
+  - {type: invokes, source: skill-01, target: tool-01}
+  - {type: invokes, source: skill-01, target: tool-03}
+  - {type: invokes, source: skill-02, target: tool-01}
+  - {type: invokes, source: skill-02, target: tool-02}
+  - {type: backedBy, source: tool-01, target: if-02}
+  - {type: backedBy, source: tool-02, target: if-04}
+  - {type: backedBy, source: tool-03, target: if-01}
+  - {type: backedBy, source: tool-04, target: if-05}
+  - {type: automates, source: skill-01, target: proc-01}
+  - {type: automates, source: skill-02, target: proc-01}
+  # MCP 包装
+  - {type: wraps, source: mcp-01, target: sys-01}
+  - {type: wraps, source: mcp-02, target: sys-04}
+  - {type: exposes, source: mcp-01, target: tool-01}
+  - {type: exposes, source: mcp-01, target: tool-03}
+  - {type: exposes, source: mcp-02, target: tool-02}
+  # 规则执行点（R4）与护栏/评测（R5: agent-02 为 L3）
+  - {type: enforcedBy, source: rule-01, target: svc-01}
+  - {type: enforcedBy, source: rule-02, target: grd-01}
+  - {type: enforcedBy, source: rule-03, target: svc-01}
+  - {type: enforcedBy, source: rule-04, target: svc-01}
+  - {type: enforces, source: grd-01, target: rule-02}
+  - {type: enforces, source: grd-02, target: rule-02}
+  - {type: protects, source: grd-01, target: agent-02}
+  - {type: protects, source: grd-02, target: agent-02}
+  - {type: validates, source: eval-01, target: agent-02}
+  - {type: specifies, source: eval-01, target: rule-02}
+  # 资产归属
+  - {type: ownedBy, source: sys-01, target: org-01}
+  - {type: ownedBy, source: bc-01, target: org-01}
+  - {type: ownedBy, source: bc-02, target: org-02}
+
+questions:
+  - {about: sys-02/sys-03 归类, text: OMS/WMS 仅标注“自研”，kind 暂归 legacy，请架构组确认是否准确, evidence: [ev-10]}
+  - {about: rule-04 判定矩阵, text: 退换货判定矩阵当前只能存于 Evidence 文本，建议 v0.2 增加结构化 decision_table 属性, evidence: [ev-05]}
+  - {about: agent-02 自主级别, text: 退款执行助手定级 L3（监督执行），需售后主管与风控会签确认后方可 proposed, evidence: [ev-03, ev-04]}
+  - {about: 指标分解, text: 痛点“审批→执行平均延迟6小时”是否应设为 obj-02 的分解指标, evidence: [ev-13]}

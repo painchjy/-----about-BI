@@ -33,6 +33,15 @@
 **收益**：当业务改一个 BusinessRule（如赔付上限），可以沿边找到受影响的 Guardrail、Eval、
 Agent、Skill——这就是本体带来的**影响分析能力**，也是"用本体约束智能化改造"的核心价值。
 
+## 1.2 分层的四个目的（评审问答①）
+
+1. **受众与治理分工**：每层回答一个问题、有一个主要读者——动机层给业务方评审，智能体层给工程方评审；审校台按层出视图。
+2. **变更频率隔离**：动机层（年）压住领域层（月）压住智能体层（周）——稳定层为易变层提供锚点。
+3. **依赖与校验方向**：上层引用下层（Agent→Mission、Skill→Capability、Objective→Goal），规则引擎沿此方向校验完整性。
+4. **影响分析链路**：跨层连边 = "业务变更→技术影响"传导链（改 BusinessRule → 沿边找到 Guardrail/Eval/Agent/Tool/System）。
+
+> **层是语义分区与视图，不是存储边界**——所有层必须存同一张图，否则跨层边断裂（见第 9 节）。
+
 ## 2. 设计原则
 
 1. **溯源优先（Evidence-first）**：每个模型元素必须挂证据（文档片段引用），
@@ -49,13 +58,13 @@ Agent、Skill——这就是本体带来的**影响分析能力**，也是"用�
 ## 3. 元素定义总表（按层）
 
 > 完整机器可读定义（含必填项、枚举、抽取线索 clues）见 `ontology/metamodel.yaml`。
-> 所有元素继承内核基座：`id / name / kind / description / aliases / status /
-> provenance{origin, agent, confidence} / evidence[]`。
+> 所有元素继承内核基座：`id / name / kind / description / aliases / ns(命名空间/域分区) /
+> status / provenance{origin, agent, confidence} / evidence[]`。
 
 ### 3.1 内核层 kernel
 | 类型 | 定义 | 关键属性 |
 |---|---|---|
-| Evidence | 模型元素→知识库文档片段的溯源链接 | doc_title, doc_type, fragment(原文摘录), location |
+| Evidence | 模型元素→知识库文档片段的溯源链接 | kb(知识库), doc_title, doc_type, fragment(原文摘录), location |
 
 ### 3.2 动机层 motivation（BMM 对齐）
 | 类型 | BMM 对应 | 定义 | 关键属性 |
@@ -82,6 +91,7 @@ Agent、Skill——这就是本体带来的**影响分析能力**，也是"用�
 | Aggregate | 聚合根——一致性边界，不变量的代码化载体 | invariants[] |
 | Entity / ValueObject | 实体 / 值对象 | identity / attributes[] |
 | DomainService / DomainEvent / ApplicationService | 领域服务 / 领域事件 / 应用服务 | — / payload / operations |
+| BusinessProcess | 业务流程——跨角色/系统的步骤序列（v0.1.1 PoC 增补） | steps[{step, actor, system}] |
 
 > 上下文映射不建实体类型，用关系 `contextRelationship(pattern=customer_supplier|acl|ohs|…)` 表达。
 
@@ -103,6 +113,7 @@ Agent、Skill——这就是本体带来的**影响分析能力**，也是"用�
 |---|---|---|
 | System | 存量/外采/新建系统 | kind(legacy/saas/new), criticality |
 | DataStore / Interface | 数据存储 / 既有接口 | — / protocol, spec_ref |
+| OrganizationUnit | 组织单元（元素 owner） | — |
 
 ## 4. 关系目录（边类型）
 
@@ -140,6 +151,7 @@ Agent、Skill——这就是本体带来的**影响分析能力**，也是"用�
 | validates / specifies | Eval → Agent/Skill；Eval → BusinessRule | 评测对象 / 规约的规则 |
 | enforces / protects | Guardrail → BusinessRule/Policy；Guardrail → Agent/Skill | 护栏执行点 / 保护对象 |
 | ownedBy | System/BoundedContext → OrganizationUnit | 归属组织 |
+| automates | Skill/Agent → BusinessProcess | 流程被自动化（v0.1.1） |
 
 ## 5. 约束规则（校验器执行，见 metamodel.yaml rules 节）
 
@@ -158,8 +170,11 @@ Agent、Skill——这就是本体带来的**影响分析能力**，也是"用�
 
 ## 6. 治理、溯源与置信度
 
-- **状态机**：`draft → proposed → reviewed → approved → deprecated`；
+- **状态机与校验门禁**：`draft → proposed → reviewed → approved → deprecated`；
   抽取智能体最高只能产出 `proposed`，`approved` 需人工在审校台确认。
+  **校验随状态收紧**：draft=中间态，error 级规则降级为 warn（容忍乱序抽取的不完整）；
+  proposed=提交评审态，error 级规则生效；approved=必须全绿。
+  这就是“分层建模”被强制的位置：强制的是**批准顺序**（先动机后领域再智能体），不是抽取顺序。
 - **置信度**：`provenance.confidence ∈ [0,1]`，由抽取智能体自评 + Critic 复核；
   低置信元素进入人工优先评审队列。
 - **影响分析**：沿 `enforces/protects/validates/specifies/backedBy/wraps` 边做双向遍历，
@@ -172,4 +187,28 @@ Agent、Skill——这就是本体带来的**影响分析能力**，也是"用�
   MCPResource/MCPPrompt、PotentialReward、多智能体 InteractionProtocol 实体化。
 - 扩展原则：新增类型必须声明 ①所属层 ②消费者（抽取/校验/生成/MCP）③至少一条关系。
 
-| OrganizationUnit | 组织单元（元素 owner） | — |
+## 8. 建模工作流：分层 ≠ 瀑布（评审问答②）
+
+分层规定的是**依赖顺序与批准顺序**，不是抽取的先后顺序：
+
+- **抽取可乱序**：文档里先出现什么抽什么；draft 容忍不完整（缺 Mission 的 Agent 只报 warn）；
+- **批准有顺序**：Agent 提交评审前，其 Mission/BoundedContext 必须已存在——“动机→领域→智能体”是收敛的自然顺序，由状态门禁强制执行；
+- **正向（新建系统）**：自顶向下——动机层（为什么做）→ 领域层（业务结构）→ 智能体层（如何执行）；
+- **逆向（存量改造）**：通常自底向上——先抽 System/Interface/Tool，归纳出 Aggregate/BoundedContext，再反向补动机层；补不出证据的动机元素标记 `draft + 待业务确认`，进入 Critic 问题清单；
+- **迭代节奏**：每轮迭代 = 分层聚焦抽取（Extractor 按层切换 prompt/Schema）→ Linker 跨层连边 → Critic 规则校验 → 人工收敛一批 proposed。
+
+## 9. 多域组织与知识库拓扑（评审问答③④）
+
+**两个“库”必须分开理解：**
+
+| | 文档知识库（WeKnora） | 领域模型库（Model Graph） |
+|---|---|---|
+| 存什么 | 原始文档/分块（证据源） | 模型元素 + 关系（结构化模型） |
+| 分还是合 | **可多个**：按域/部门/密级分库 | **必须一个**：一张统一图 |
+| 为什么 | 文档有归属与权限 | 价值全在跨层、跨域的边上 |
+
+- **层不是存储边界**：所有层存同一张图，`layer` 只是属性 + 视图过滤器；
+- **多域组织（三级）**：Workspace（企业/事业部）→ 域（Domain，`ns` 命名空间分区）→ BoundedContext；跨域 `contextRelationship` 是一等公民，存同一图；
+- **企业级共享命名空间 `enterprise`**：Vision/Mission/企业政策/组织只建一次，各域元素跨域引用（如 `Agent —hasMission→ enterprise:mission-01`），不复制；
+- **文档库映射**：默认一域一 KB；企业级文档（愿景/政策/组织）建共享 KB；Evidence 记录 `(kb, doc, 片段坐标)` 三元组，跨库溯源无障碍；
+- **WeKnora 映射**：tenant ≈ Workspace；knowledge base ≈ 域/密级文档库；模型库按 workspace 分 namespace。术语同名不同义跨上下文是**特性**（BoundedContext 的意义），R8 只管同一上下文内唯一。

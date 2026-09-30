@@ -2,6 +2,7 @@
 """UDOM 模型实例校验器：结构校验 + 约束规则引擎（R1-R10）
 用法: python validate.py <metamodel.yaml> <instance.yaml>
 退出码: 0=通过(可含 warn)  1=存在 error
+状态门禁: draft=中间态(error级降级为warn，容忍乱序抽取的不完整)；proposed起 error 生效；approved 必须全绿
 """
 import sys
 import yaml
@@ -29,6 +30,13 @@ class Checker:
 
     def err(self, rid, msg):  self.errors.append(f"[{rid}] {msg}")
     def warn(self, rid, msg): self.warns.append(f"[{rid}] {msg}")
+
+    def report(self, level, e, rid, msg):
+        """状态感知门禁：draft 中间态的 error 级违例降级为 warn"""
+        if level == "error" and (e or {}).get("status") == "draft":
+            self.warn(f"{rid}(draft降级)", msg)
+        else:
+            (self.err if level == "error" else self.warn)(rid, msg)
 
     def enum_values(self, spec):
         ev = spec.get("enum")
@@ -101,9 +109,9 @@ class Checker:
                 n = self.out_count.get((eid, rt), 0)
                 card = spec.get("card", "0..*")
                 if card == "1" and n != 1:
-                    self.err("CARD", f"{eid}({e['kind']}) 应有恰好 1 条 {rt}，实际 {n}")
+                    self.report("error", e, "CARD", f"{eid}({e['kind']}) 应有恰好 1 条 {rt}，实际 {n}")
                 elif card == "1..*" and n < 1:
-                    self.err("CARD", f"{eid}({e['kind']}) 应有 ≥1 条 {rt}，实际 0")
+                    self.report("error", e, "CARD", f"{eid}({e['kind']}) 应有 ≥1 条 {rt}，实际 0")
                 elif card == "0..1" and n > 1:
                     self.err("CARD", f"{eid}({e['kind']}) 应有 ≤1 条 {rt}，实际 {n}")
 
@@ -127,9 +135,9 @@ class Checker:
                            for r in self.in_rels.get((e["id"], "protects"), [])
                            if r["source"] in self.elems)
                 if not hitl:
-                    self.err("R5", f"Agent {e['id']}({e['name']}) 自主级别 {lv} 但无 hitl 护栏 protects")
+                    self.report("error", e, "R5", f"Agent {e['id']}({e['name']}) 自主级别 {lv} 但无 hitl 护栏 protects")
                 if not self.in_rels.get((e["id"], "validates")):
-                    self.err("R5", f"Agent {e['id']}({e['name']}) 自主级别 {lv} 但无 Eval validates")
+                    self.report("error", e, "R5", f"Agent {e['id']}({e['name']}) 自主级别 {lv} 但无 Eval validates")
         # R6: 除 Evidence 外应有 ≥1 证据
         for e in active:
             if e["kind"] != "Evidence" and not e.get("evidence"):
@@ -137,7 +145,7 @@ class Checker:
         # R7: Skill 须 realizes ≥1 Capability
         for e in active:
             if e["kind"] == "Skill" and self.out_count.get((e["id"], "realizes"), 0) < 1:
-                self.err("R7", f"Skill {e['id']}({e['name']}) 未 realizes 任何 BusinessCapability")
+                self.report("error", e, "R7", f"Skill {e['id']}({e['name']}) 未 realizes 任何 BusinessCapability")
         # R8: 同一上下文内 GlossaryTerm.term 唯一
         term_scope = {}
         for r in self.rels:

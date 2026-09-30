@@ -76,7 +76,12 @@ flowchart TB
 ### C4 领域模型库（新建）
 - **决策 D2：起步用 PostgreSQL（elements JSONB + relations 表），与 WeKnora 同栈**；
   当需要多跳影响分析/图算法时再引入 Neo4j（接口层抽象，存储可替换）。
-- 模型即数据：每次提交是一个 model 版本（git 式 staging/commit 语义）。
+- **决策 D3：存储拓扑 = 一个模型库（统一图）+ 多个文档 KB + 命名空间分区**。
+  所有层（动机/领域/智能体/资产）必须同图，否则跨层边断裂、影响分析失效；层是视图不是存储边界。
+  多域用 `ns` 命名空间分区，企业级元素放 `enterprise` 共享空间；文档侧按域/密级建多个 WeKnora KB，
+  Evidence 以 `(kb, doc, 坐标)` 跨库引用（评审问答③④）。
+- 模型即数据：每次提交是一个 model 版本（git 式 staging/commit 语义）；
+  **approve 门禁 = 校验器 error 级全绿**（draft 中间态降级 warn，容忍乱序抽取的不完整）。
 
 ### C5 人工审校台 HITL Studio（Vue 扩展模块）
 - 评审队列（按置信度升序）、元素/关系 diff、图谱画布、批准流、Critic 问题清单答复入口。

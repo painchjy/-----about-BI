@@ -4,7 +4,7 @@
 # 本文件同时作为：① 规范 ② 抽取智能体的结构化输出契约 ③ 校验器规则源
 # 与 docs/ontology-spec.md 保持同步
 # =============================================================================
-version: "0.1.0"
+version: "0.1.1"  # 0.1.1: PoC 增补 BusinessProcess/automates、Evidence.kb、Element.ns
 name: UDOM
 
 layers:
@@ -28,7 +28,8 @@ enums:
 # ---------------------------------------------------------------------------
 # 类型目录：kind → 所属层 / 必填属性 / 属性说明 / 抽取线索(clues 供抽取智能体)
 # 所有类型隐式继承 Element 基座属性：id, name, kind, description?, aliases?,
-#   status(draft), provenance{origin, agent?, confidence?}, evidence[](Evidence id 列表)
+#   ns?(命名空间/域分区，缺省 enterprise), status(draft),
+#   provenance{origin, agent?, confidence?}, evidence[](Evidence id 列表)
 # ---------------------------------------------------------------------------
 types:
 
@@ -41,6 +42,7 @@ types:
       doc_type:  {req: true, enum: [business, technical, regulatory, meeting, code]}
       fragment:  {req: true,  desc: 原文片段（摘录，非转述）}
       location:  {req: false, desc: 章节/页码/URL}
+      kb:        {req: false, desc: 知识库标识（多知识库部署时建议必填）}
     clues: [文档, 白皮书, 需求说明书, 接口文档, 会议纪要]
 
   # ---- motivation 动机层（BMM 对齐）----
@@ -177,6 +179,13 @@ types:
     attrs:
       operations: {req: false}
 
+  BusinessProcess:
+    layer: domain
+    desc: 业务流程——跨角色/系统的业务步骤序列（v0.1.1 PoC 增补：存量流程的载体，可被 Skill 自动化）
+    attrs:
+      steps: {req: false, desc: "步骤列表 [{step, actor?, system?}]"}
+    clues: [流程, 环节, 步骤, 审批流, 处理过程]
+
   # ---- agent 智能体层（AgentOps）----
   Agent:
     layer: agent
@@ -288,12 +297,12 @@ relations:
   threatens:             {from: [Risk], to: [Goal, Objective], card: "0..*"}
   # 桥接层：动机 ↔ 领域
   enables:               {from: [BusinessCapability], to: [Strategy], card: "0..*"}
-  realizes:              {from: [BoundedContext, Skill], to: [BusinessCapability], card: "0..*"}    # R7: Skill 须 ≥1
+  realizes:              {from: [BoundedContext, Skill, BusinessProcess], to: [BusinessCapability], card: "0..*"}  # R7: Skill 须 ≥1
   within:                {from: [BoundedContext], to: [Domain], card: "0..1"}
   # 领域层内部（DDD）
   contains:              {from: [BoundedContext],
                           to: [Aggregate, Entity, ValueObject, DomainService, DomainEvent,
-                               ApplicationService, GlossaryTerm],
+                               ApplicationService, GlossaryTerm, BusinessProcess],
                           card: "0..*"}
   partOf:                {from: [Entity, ValueObject], to: [Aggregate], card: "0..1"}
   raises:                {from: [Aggregate, DomainService], to: [DomainEvent], card: "0..*"}
@@ -306,7 +315,7 @@ relations:
   escalatesVia:          {from: [Agent], to: [BusinessPolicy], card: "0..*"}
   ownsSkill:             {from: [Agent], to: [Skill], card: "0..*"}
   invokes:               {from: [Skill], to: [Tool], card: "0..*"}
-  backedBy:              {from: [Tool], to: [ApplicationService, DomainService, System], card: "0..1"}
+  backedBy:              {from: [Tool], to: [ApplicationService, DomainService, System, Interface], card: "0..1"}
   wraps:                 {from: [MCPServer], to: [System, BoundedContext], card: "1"}
   exposes:               {from: [MCPServer], to: [Tool], card: "0..*"}
   hasContextDesign:      {from: [Agent], to: [ContextDesign], card: "0..1"}
@@ -316,6 +325,7 @@ relations:
   enforces:              {from: [Guardrail], to: [BusinessRule, BusinessPolicy], card: "0..*"}
   protects:              {from: [Guardrail], to: [Agent, Skill], card: "0..*"}
   ownedBy:               {from: [System, BoundedContext], to: [OrganizationUnit], card: "0..1"}
+  automates:             {from: [Skill, Agent], to: [BusinessProcess], card: "0..*"}
 
 # ---------------------------------------------------------------------------
 # 约束规则（校验器执行；R1/R2/R3/R9 由结构校验覆盖，R4-R8/R10 为独立规则实现）
